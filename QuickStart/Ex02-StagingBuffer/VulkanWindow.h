@@ -3,10 +3,9 @@
 
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
-
-class TextureRenderer: public QVulkanWindowRenderer {
+class TriangleRenderer: public QVulkanWindowRenderer {
 public:
-	TextureRenderer(QVulkanWindow * window);
+	TriangleRenderer(QVulkanWindow * window);
 	void initResources() override;
 	void initSwapChainResources() override;
 	void releaseSwapChainResources() override;
@@ -15,14 +14,10 @@ public:
 private:
 	vk::ShaderModule loadShader(const QString& name);
 private:
-	QVulkanWindow* mWindow = nullptr;
+	QVulkanWindow* window_ = nullptr;
 
 	vk::Buffer vertexBuffer_;
 	vk::DeviceMemory vertexDevMemory_;
-
-	vk::Buffer uniformBuffer_;
-	vk::DeviceMemory uniformDevMemory_;
-	vk::DescriptorBufferInfo uniformBufferInfo_[QVulkanWindow::MAX_CONCURRENT_FRAME_COUNT];
 
 	vk::DescriptorPool descPool_;
 	vk::DescriptorSetLayout descSetLayout_;
@@ -35,7 +30,7 @@ private:
 
 class VulkanWindow: public QVulkanWindow{
 public:
-	QVulkanWindowRenderer* createRenderer() override{ return new TextureRenderer(this); }
+	QVulkanWindowRenderer* createRenderer() override{ return new TriangleRenderer(this); }
 };
 
 #endif // VulkanWindow_h__

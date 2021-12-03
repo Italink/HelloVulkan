@@ -1,22 +1,17 @@
 #include "VulkanWindow.h"
 #include <QFile>
-#include <QTime>
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
-static float vertexData[] = { 
-   //position			color	
-	 0.0f, 0.5f,		1.0f, 0.0f, 0.0f,
-	-0.5f,-0.5f,		0.0f, 1.0f, 0.0f,
-	 0.5f,-0.5f,		0.0f, 0.0f, 1.0f
+static float vertexData[] = { // Y up, front = CCW
+	 0.0f,   -0.5f,   1.0f, 0.0f, 0.0f,
+	-0.5f,   0.5f,   0.0f, 1.0f, 0.0f,
+	 0.5f,   0.5f,   0.0f, 0.0f, 1.0f
 };
 
-static inline vk::DeviceSize aligned(vk::DeviceSize v, vk::DeviceSize byteAlign) {
-	return (v + byteAlign - 1) & ~(byteAlign - 1);
-}
 
-TextureRenderer::TextureRenderer(QVulkanWindow* window)
-	:mWindow(window)
+TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
+	:window_(window)
 {
 	QList<int> sampleCounts= window->supportedSampleCounts();
 	if (!sampleCounts.isEmpty()) {
@@ -24,56 +19,59 @@ TextureRenderer::TextureRenderer(QVulkanWindow* window)
 	}
 }
 
-void TextureRenderer::initResources()
+void TriangleRenderer::initResources()
 {
-	vk::Device device = mWindow->device();
+	vk::Device device = window_->device();
+	const int concurrentFrameCount = window_->concurrentFrameCount();
+	vk::PhysicalDeviceLimits limits = window_->physicalDeviceProperties()->limits;
 
-	const int concurrentFrameCount = mWindow->concurrentFrameCount();
-
-	vk::PhysicalDeviceLimits limits = mWindow->physicalDeviceProperties()->limits;
-
-	vk::DeviceSize vertexAllocSize = aligned(sizeof(vertexData), limits.minUniformBufferOffsetAlignment);
 	vk::BufferCreateInfo vertexBufferInfo;
 	vertexBufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
-	vertexBufferInfo.size = vertexAllocSize;
+	vertexBufferInfo.size = sizeof(vertexData);
 	vertexBuffer_ = device.createBuffer(vertexBufferInfo);
 	vk::MemoryRequirements vertexMemReq = device.getBufferMemoryRequirements(vertexBuffer_);
-	vk::MemoryAllocateInfo vertexMemAllocInfo(vertexMemReq.size, mWindow->hostVisibleMemoryIndex());
+	vk::MemoryAllocateInfo vertexMemAllocInfo(vertexMemReq.size, window_->deviceLocalMemoryIndex());
 	vertexDevMemory_ = device.allocateMemory(vertexMemAllocInfo);
 	device.bindBufferMemory(vertexBuffer_, vertexDevMemory_, 0);
-	uint8_t* vertexBufferMemPtr = (uint8_t*)device.mapMemory(vertexDevMemory_, 0, vertexMemReq.size);
-	memcpy(vertexBufferMemPtr, vertexData, sizeof(vertexData));
-	device.unmapMemory(vertexDevMemory_);
+	
+	vk::BufferCreateInfo stagingBufferInfo;
+	stagingBufferInfo.usage = vk::BufferUsageFlagBits::eTransferSrc;
+	stagingBufferInfo.size = sizeof(vertexData);
+	vk::Buffer stagingBuffer = device.createBuffer(stagingBufferInfo);
+	vk::MemoryRequirements stagingMemReq = device.getBufferMemoryRequirements(stagingBuffer);
+	vk::MemoryAllocateInfo stagingMemAllocInfo(stagingMemReq.size, window_->hostVisibleMemoryIndex());
+	vk::DeviceMemory stagingDevMemory = device.allocateMemory(stagingMemAllocInfo);
+	device.bindBufferMemory(stagingBuffer, stagingDevMemory, 0);
+	
+	uint8_t* stagingBufferMemPtr = (uint8_t*)device.mapMemory(stagingDevMemory, 0, vertexMemReq.size);
+	memcpy(stagingBufferMemPtr, vertexData, sizeof(vertexData));
+	device.unmapMemory(stagingDevMemory);
+	
+	vk::CommandBufferAllocateInfo cmdBufferAlllocInfo;
+	cmdBufferAlllocInfo.level = vk::CommandBufferLevel::ePrimary;
+	cmdBufferAlllocInfo.commandPool = window_->graphicsCommandPool();
+	cmdBufferAlllocInfo.commandBufferCount = 1;
+	vk::CommandBuffer cmdBuffer = device.allocateCommandBuffers(cmdBufferAlllocInfo).front();
+	vk::CommandBufferBeginInfo cmdBufferBeginInfo;
+	cmdBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+	cmdBuffer.begin(cmdBufferBeginInfo);
+	vk::BufferCopy copyRegion;
+	copyRegion.srcOffset = 0;
+	copyRegion.dstOffset = 0;
+	copyRegion .size = stagingBufferInfo.size;
+	cmdBuffer.copyBuffer(stagingBuffer,vertexBuffer_,copyRegion);
+	cmdBuffer.end();
+	vk::Queue graphicsQueue = window_->graphicsQueue();
+	vk::SubmitInfo submitInfo;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &cmdBuffer;
+	graphicsQueue.submit(submitInfo);
+	graphicsQueue.waitIdle();
 
-	vk::DeviceSize uniformAllocSize = aligned(16 * sizeof(float), limits.minUniformBufferOffsetAlignment);
-	vk::BufferCreateInfo uniformBufferInfo;
-	uniformBufferInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer;
-	uniformBufferInfo.size = uniformAllocSize * concurrentFrameCount;
-	uniformBuffer_ = device.createBuffer(uniformBufferInfo);
-	vk::MemoryRequirements uniformMemReq = device.getBufferMemoryRequirements(uniformBuffer_);
-	vk::MemoryAllocateInfo uniformMemAllocInfo(uniformMemReq.size, mWindow->hostVisibleMemoryIndex());
-	uniformDevMemory_ = device.allocateMemory(uniformMemAllocInfo);
-	device.bindBufferMemory(uniformBuffer_, uniformDevMemory_, 0);
-	uint8_t* uniformBufferMemPtr = (uint8_t*)device.mapMemory(uniformDevMemory_, 0, uniformMemReq.size);
-	QMatrix4x4 identify;
-	for (int i = 0; i < concurrentFrameCount; i++) {
-		vk::DeviceSize offset = i * uniformAllocSize;
-		memcpy(uniformBufferMemPtr + offset, identify.constData(), 16 * sizeof(float));
-		uniformBufferInfo_[i].buffer = uniformBuffer_;
-		uniformBufferInfo_[i].offset = offset;
-		uniformBufferInfo_[i].range = uniformAllocSize;
-	}
-	device.unmapMemory(uniformDevMemory_);
-
-	vk::VertexInputBindingDescription vertexBindingDesc(0, 5 * sizeof(float), vk::VertexInputRate::eVertex);
-
-	vk::VertexInputAttributeDescription vertexAttrDesc[] = {
-		{0,0,vk::Format::eR32G32Sfloat,0},
-		{1,0,vk::Format::eR32G32Sfloat,2 * sizeof(float)}
-	};
-
-	vk::PipelineVertexInputStateCreateInfo vertexInputState({}, 1, &vertexBindingDesc, 2, vertexAttrDesc);
-
+	device.freeCommandBuffers(window_->graphicsCommandPool(),cmdBuffer);
+	device.freeMemory(stagingDevMemory);
+	device.destroyBuffer(stagingBuffer);
+	
 	vk::DescriptorPoolSize descPoolSize(vk::DescriptorType::eUniformBuffer, (uint32_t)concurrentFrameCount);
 	vk::DescriptorPoolCreateInfo descPoolInfo;
 	descPoolInfo.maxSets = concurrentFrameCount;
@@ -99,20 +97,7 @@ void TextureRenderer::initResources()
 	for (int i = 0; i < concurrentFrameCount; ++i) {
 		vk::DescriptorSetAllocateInfo descSetAllocInfo(descPool_, 1, &descSetLayout_);
 		descSet_[i] = device.allocateDescriptorSets(descSetAllocInfo).front();
-		vk::WriteDescriptorSet descWrite;
-		descWrite.dstSet = descSet_[i];
-		descWrite.descriptorCount = 1;
-		descWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
-		descWrite.pBufferInfo = &uniformBufferInfo_[i];
-		device.updateDescriptorSets(1, &descWrite, 0, nullptr);
 	}
-
-	piplineCache_ = device.createPipelineCache(vk::PipelineCacheCreateInfo());
-
-	vk::PipelineLayoutCreateInfo piplineLayoutInfo;
-	piplineLayoutInfo.setLayoutCount = 1;
-	piplineLayoutInfo.pSetLayouts = &descSetLayout_;
-	piplineLayout_ = device.createPipelineLayout(piplineLayoutInfo);
 
 	vk::GraphicsPipelineCreateInfo piplineInfo;
 	piplineInfo.stageCount = 2;
@@ -139,6 +124,13 @@ void TextureRenderer::initResources()
 
 	piplineInfo.pStages = piplineShaderStage;
 
+	vk::VertexInputBindingDescription vertexBindingDesc(0, 5 * sizeof(float), vk::VertexInputRate::eVertex);
+
+	vk::VertexInputAttributeDescription vertexAttrDesc[] = {
+		{0,0,vk::Format::eR32G32Sfloat,0},
+		{1,0,vk::Format::eR32G32Sfloat,2 * sizeof(float)}
+	};
+	vk::PipelineVertexInputStateCreateInfo vertexInputState({}, 1, &vertexBindingDesc, 2, vertexAttrDesc);
 	piplineInfo.pVertexInputState = &vertexInputState;
 
 	vk::PipelineInputAssemblyStateCreateInfo vertexAssemblyState({}, vk::PrimitiveTopology::eTriangleList);
@@ -157,7 +149,7 @@ void TextureRenderer::initResources()
 	piplineInfo.pRasterizationState = &rasterizationState;
 
 	vk::PipelineMultisampleStateCreateInfo MSState;
-	MSState.rasterizationSamples = (VULKAN_HPP_NAMESPACE::SampleCountFlagBits)mWindow->sampleCountFlagBits();
+	MSState.rasterizationSamples = (VULKAN_HPP_NAMESPACE::SampleCountFlagBits)window_->sampleCountFlagBits();
 	piplineInfo.pMultisampleState = &MSState;
 
 	vk::PipelineDepthStencilStateCreateInfo DSState;
@@ -179,71 +171,82 @@ void TextureRenderer::initResources()
 	dynamicState.pDynamicStates = dynamicEnables;
 	piplineInfo.pDynamicState = &dynamicState;
 
+	vk::PipelineLayoutCreateInfo piplineLayoutInfo;
+	piplineLayoutInfo.setLayoutCount = 1;
+	piplineLayoutInfo.pSetLayouts = &descSetLayout_;
+	piplineLayout_ = device.createPipelineLayout(piplineLayoutInfo);
 	piplineInfo.layout = piplineLayout_;
-	piplineInfo.renderPass = mWindow->defaultRenderPass();
 
+	piplineInfo.renderPass = window_->defaultRenderPass();
+
+	piplineCache_ = device.createPipelineCache(vk::PipelineCacheCreateInfo());
 	pipline_ = device.createGraphicsPipeline(piplineCache_, piplineInfo).value;
 
 	device.destroyShaderModule(vertShader);
 	device.destroyShaderModule(fragShader);
 }
 
-void TextureRenderer::initSwapChainResources()
+void TriangleRenderer::initSwapChainResources()
 {
+
 }
 
-void TextureRenderer::releaseSwapChainResources()
+void TriangleRenderer::releaseSwapChainResources()
 {
+
 }
 
-void TextureRenderer::releaseResources()
-{
+void TriangleRenderer::releaseResources(){
+	vk::Device device = window_->device();
+	device.destroyPipeline(pipline_);
+	device.destroyPipelineCache(piplineCache_);
+	device.destroyPipelineLayout(piplineLayout_);
+	device.destroyDescriptorSetLayout(descSetLayout_);
+	device.destroyDescriptorPool(descPool_);
+	device.destroyBuffer(vertexBuffer_);
+	device.freeMemory(vertexDevMemory_);
 }
 
-void TextureRenderer::startNextFrame(){
-	vk::Device device = mWindow->device();
-	vk::CommandBuffer cmdBuffer = mWindow->currentCommandBuffer();
-	const QSize size = mWindow->swapChainImageSize();
+void TriangleRenderer::startNextFrame(){
+	vk::Device device = window_->device();
+	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
+	const QSize size = window_->swapChainImageSize();
 
 	vk::ClearValue clearValues[3] = {
 		vk::ClearColorValue(std::array<float,4>{1.0f,0.0f,0.0f,1.0f }),
-		vk::ClearDepthStencilValue(1.0f, 0),
+		vk::ClearDepthStencilValue(1.0f,0),
 		vk::ClearColorValue(std::array<float,4>{ 0.0f,0.5f,0.9f,1.0f }),
 	};
 
 	vk::RenderPassBeginInfo beginInfo;
-	beginInfo.renderPass = mWindow->defaultRenderPass();
-	beginInfo.framebuffer = mWindow->currentFramebuffer();
+	beginInfo.renderPass = window_->defaultRenderPass();
+	beginInfo.framebuffer = window_->currentFramebuffer();
 	beginInfo.renderArea.extent.width = size.width();
 	beginInfo.renderArea.extent.height = size.height();
-	beginInfo.clearValueCount = mWindow->sampleCountFlagBits() > VK_SAMPLE_COUNT_1_BIT ? 3 : 2;
+	beginInfo.clearValueCount = window_->sampleCountFlagBits() > VK_SAMPLE_COUNT_1_BIT ? 3 : 2;
 	beginInfo.pClearValues = clearValues;
 
 	cmdBuffer.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
 
-	uint8_t* uniformMatrixMemPtr = (uint8_t*)device.mapMemory(uniformDevMemory_, uniformBufferInfo_[mWindow->currentFrame()].offset, sizeof(float) * 16, {});
-	QMatrix4x4 matrix; 
-	matrix.rotate(QTime::currentTime().msecsSinceStartOfDay()/10.0, 0, 1, 0);
-	memcpy(uniformMatrixMemPtr, matrix.constData(), 16 * sizeof(float));
-	device.unmapMemory(uniformDevMemory_);
 	vk::Viewport viewport;
-	viewport.x = viewport.y = 0;
+	viewport.x = 0;
+	viewport.y = 0;
 	viewport.width = size.width();
 	viewport.height = size.height();
+
 	viewport.minDepth = 0;
 	viewport.maxDepth = 1;
 	cmdBuffer.setViewport(0, viewport);
 
 	vk::Rect2D scissor;
 	scissor.offset.x = scissor.offset.y = 0;
-	scissor.extent.width = viewport.width;
-	scissor.extent.height = viewport.height;
-
+	scissor.extent.width = size.width();
+	scissor.extent.height = size.height();
 	cmdBuffer.setScissor(0, scissor);
 
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
 
-	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[mWindow->currentFrame()], 0, nullptr);
+	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[window_->currentFrame()], 0, nullptr);
 
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
 
@@ -251,11 +254,11 @@ void TextureRenderer::startNextFrame(){
 
 	cmdBuffer.endRenderPass();
 
-	mWindow->frameReady();
-	mWindow->requestUpdate();
+	window_->frameReady();
+	window_->requestUpdate();
 }
 
-vk::ShaderModule TextureRenderer::loadShader(const QString& name)
+vk::ShaderModule TriangleRenderer::loadShader(const QString& name)
 {
 	QFile file(name);
 	if (!file.open(QIODevice::ReadOnly)) {
@@ -267,6 +270,6 @@ vk::ShaderModule TextureRenderer::loadShader(const QString& name)
 	vk::ShaderModuleCreateInfo shaderInfo;
 	shaderInfo.codeSize = blob.size();
 	shaderInfo.pCode = reinterpret_cast<const uint32_t*>(blob.constData());
-	vk::Device device = mWindow->device();
+	vk::Device device = window_->device();
 	return device.createShaderModule(shaderInfo);
 }

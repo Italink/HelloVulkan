@@ -4,9 +4,9 @@
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 static float vertexData[] = { // Y up, front = CCW
-	 0.0f,   0.5f,   1.0f, 0.0f, 0.0f,
-	-0.5f,  -0.5f,   0.0f, 1.0f, 0.0f,
-	 0.5f,  -0.5f,   0.0f, 0.0f, 1.0f
+	 0.0f,  -0.5f,   1.0f, 0.0f, 0.0f,
+	-0.5f,   0.5f,   0.0f, 1.0f, 0.0f,
+	 0.5f,   0.5f,   0.0f, 0.0f, 1.0f
 };
 
 TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
@@ -35,7 +35,6 @@ void TriangleRenderer::initResources()
 	uint8_t* vertexBufferMemPtr = (uint8_t*)device.mapMemory(vertexDevMemory_, 0, vertexMemReq.size);
 	memcpy(vertexBufferMemPtr, vertexData, sizeof(vertexData));
 	device.unmapMemory(vertexDevMemory_);
-
 
 	vk::DescriptorPoolSize descPoolSize(vk::DescriptorType::eUniformBuffer, (uint32_t)concurrentFrameCount);
 	vk::DescriptorPoolCreateInfo descPoolInfo;
@@ -147,13 +146,16 @@ void TriangleRenderer::initResources()
 	vk::PipelineLayoutCreateInfo piplineLayoutInfo;
 	piplineLayoutInfo.setLayoutCount = 1;
 	piplineLayoutInfo.pSetLayouts = &descSetLayout_;
-	pushConstant_.offset=0;
-	pushConstant_.size =sizeof(float);
+	pushConstant_.offset = 0;
+	pushConstant_.size = sizeof(float);
 	pushConstant_.stageFlags = vk::ShaderStageFlagBits::eVertex;
-	piplineLayoutInfo.pPushConstantRanges = &pushConstant_;
-	piplineLayout_ = device.createPipelineLayout(piplineLayoutInfo);
-	piplineInfo.layout = piplineLayout_;
 
+	piplineLayoutInfo.pushConstantRangeCount = 1;
+	piplineLayoutInfo.pPushConstantRanges = &pushConstant_;
+
+	piplineLayout_ = device.createPipelineLayout(piplineLayoutInfo);
+
+	piplineInfo.layout = piplineLayout_;
 	piplineInfo.renderPass = window_->defaultRenderPass();
 
 	piplineCache_ = device.createPipelineCache(vk::PipelineCacheCreateInfo());
@@ -211,9 +213,9 @@ void TriangleRenderer::startNextFrame(){
 
 	vk::Viewport viewport;
 	viewport.x = 0;
-	viewport.y = size.height();
+	viewport.y = 0;
 	viewport.width = size.width();
-	viewport.height = -size.height();
+	viewport.height = size.height();
 
 	viewport.minDepth = 0;
 	viewport.maxDepth = 1;
@@ -231,11 +233,11 @@ void TriangleRenderer::startNextFrame(){
 
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
 
-	cmdBuffer.pushConstants<float>(piplineLayout_, pushConstant_.stageFlags, 0, 1.0f);
+	cmdBuffer.pushConstants<float>(piplineLayout_, pushConstant_.stageFlags, 0, {1.0f});
 	cmdBuffer.draw(3, 1, 0, 0);
 
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, outlinePipline_);
-	cmdBuffer.pushConstants<float>(piplineLayout_, pushConstant_.stageFlags, 0, 1.2f);
+	cmdBuffer.pushConstants<float>(piplineLayout_, pushConstant_.stageFlags, 0, {1.2f});
 	cmdBuffer.draw(3, 1, 0, 0);
 
 	cmdBuffer.endRenderPass();

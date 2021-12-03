@@ -3,7 +3,7 @@ project(${ProjectId})
 
 file(GLOB PROJECT_SOURCE FILES *.h *.cpp)
 
-file(GLOB SHADER_SOURCE FILES *.vert *.frag)
+file(GLOB SHADER_SOURCE FILES *.vert *.frag *.comp)
 source_group("GLSL Files" FILES ${SHADER_SOURCE})
 
 add_executable(${ProjectId} 

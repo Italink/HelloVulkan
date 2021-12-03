@@ -7,9 +7,9 @@ const int switcher = 1;
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 static float vertexData[] = { // Y up, front = CCW
-	 0.0f,   0.5f,   1.0f, 0.0f, 0.0f,
-	-0.5f,  -0.5f,   0.0f, 1.0f, 0.0f,
-	 0.5f,  -0.5f,   0.0f, 0.0f, 1.0f
+	 0.0f,  -0.5f,   1.0f, 0.0f, 0.0f,
+	-0.5f,   0.5f,   0.0f, 1.0f, 0.0f,
+	 0.5f,   0.5f,   0.0f, 0.0f, 1.0f
 };
 
 TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
@@ -211,9 +211,9 @@ void TriangleRenderer::startNextFrame(){
 
 	vk::Viewport viewport;
 	viewport.x = 0;
-	viewport.y = size.height();
+	viewport.y = 0;
 	viewport.width = size.width();
-	viewport.height = -size.height();
+	viewport.height = size.height();
 
 	viewport.minDepth = 0;
 	viewport.maxDepth = 1;

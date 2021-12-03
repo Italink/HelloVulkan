@@ -215,9 +215,9 @@ void TriangleRenderer::startNextFrame() {
 
 	vk::Viewport viewport;
 	viewport.x = 0;
-	viewport.y = size.height();
+	viewport.y = 0;
 	viewport.width = size.width();
-	viewport.height = -size.height();
+	viewport.height = size.height();
 
 	viewport.minDepth = 0;
 	viewport.maxDepth = 1;

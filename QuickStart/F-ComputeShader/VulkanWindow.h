@@ -15,8 +15,21 @@ private:
 	vk::ShaderModule loadShader(const QString& name);
 private:
 	QVulkanWindow* window_ = nullptr;
-
 	vk::Queue computeQueue_;
+
+	const int BUFFER_SIZE = 16384;
+	vk::Buffer inputBuffer_;
+	vk::Buffer outputBuffer_;
+	vk::DeviceMemory bufMemory_;
+
+	vk::DescriptorPool descPool_;
+	vk::DescriptorSetLayout descSetLayout_;
+	vk::DescriptorSet descSet_;
+	vk::DescriptorBufferInfo descBufferInfo_[2];
+	
+	vk::PipelineLayout piplineLayout_;
+	vk::Pipeline computePipline_;
+	vk::PipelineCache piplineCache_;
 };
 
 class VulkanWindow: public QVulkanWindow{

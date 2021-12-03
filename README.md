@@ -108,3 +108,9 @@ Vulkan的书籍不多，由于它只是一个API，一个用于绘图的工具�
 
 
 ## 构建 Build
+
+使用 Qt Creator 或 VS 可直接打开 CmakeLists.txt
+
+推荐使用Cmake GUI 
+
+使用Cmake GUI打开 CMakeLists.txt （或者将其拖入CMake GUI），点击【Configure】，选择Visual Studio 2019 工程，确定之后，点击【Build】，再点击【Open】可打开 VS 工程 ，在解决方案菜单中，右键项目，在菜单栏点击【设为启动项】，可运行对应项目
