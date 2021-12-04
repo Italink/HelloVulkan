@@ -16,13 +16,12 @@ function(target_glsl_to_spriv PROJECT_TARGET SHADER_PATH)
     #set_property(TARGET ${PROJECT_TARGET} APPEND PROPERTY SOURCES ${BINARY_SHADER_PATH})  
 endfunction()
 
-set(EXAMPLE_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/Examples)
+set(EXAMPLE_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/QuickStart)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets  REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets  REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     add_definitions(-DNOMINMAX -DVK_USE_PLATFORM_WIN32_KHR)
@@ -34,6 +33,8 @@ endif()
 
 file(GLOB EXAMPLE_DIR_LIST RELATIVE ${EXAMPLE_ROOT_DIR} ${EXAMPLE_ROOT_DIR}/*)
 foreach(EXAMPLE_DIR ${EXAMPLE_DIR_LIST})
-    add_subdirectory(${EXAMPLE_ROOT_DIR}/${EXAMPLE_DIR})
+    if ( IS_DIRECTORY ${EXAMPLE_ROOT_DIR}/${EXAMPLE_DIR} ) 
+        add_subdirectory(${EXAMPLE_ROOT_DIR}/${EXAMPLE_DIR})
+    endif()
 endforeach()
 add_custom_target(Vulkan-Exmaples)

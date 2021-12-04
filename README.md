@@ -109,8 +109,24 @@ Vulkan的书籍不多，由于它只是一个API，一个用于绘图的工具�
 
 ## 构建 Build
 
+如果你刚刚才安装上面的环境，请先重启电脑
+
 使用 Qt Creator 或 VS 可直接打开 CmakeLists.txt
 
-推荐使用Cmake GUI 
+推荐使用Cmake GUI 打开 CMakeLists.txt （或者将其拖入CMake GUI），修改构建路径为[QtVulkan-build]，防止生成新文件在原先的代码目录下
 
-使用Cmake GUI打开 CMakeLists.txt （或者将其拖入CMake GUI），点击【Configure】，选择Visual Studio 2019 工程，确定之后，点击【Build】，再点击【Open】可打开 VS 工程 ，在解决方案菜单中，右键项目，在菜单栏点击【设为启动项】，可运行对应项目
+![](./Doc/Src/CMake01.png)
+
+然后点击【Configure】进行配置，选择【Visual Studio 16 2019】（如果你是 2017 则选 2017 的版本）
+
+![](./Doc/Src/CMake02.png)
+
+配置过程中可能会出现报错，这是因为初次使用，导致CMake无法找到Qt的目录，你在红色的条目上能看到它的Value是【Not Founded】，点击该条目，右侧会出现一个按钮，点击它选择路径，按下方的路径根据你自己的QT安装路径来进行选择，选择完毕点击【Configure】，然后继续选择路径消除报错，直到没有报错产生。
+
+![](./Doc/Src/CMake03.png)
+
+然后再点击【Generate】，就会再构建目录下生成VS工程文件，再点击【Open Project】可打开 VS 工程 
+
+在解决方案菜单中，右键项目，在菜单栏点击【设为启动项】，可运行对应项目
+
+![](./Doc/Src/CMake04.png)
