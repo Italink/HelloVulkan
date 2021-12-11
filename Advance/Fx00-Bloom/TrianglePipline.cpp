@@ -1,31 +1,23 @@
-#include "VulkanWindow.h"
+#include "TrianglePipline.h"
 #include <QFile>
-
-#include <vulkan\vulkan.hpp>
-
-VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+#include "Common.h"
 
 static float vertexData[] = { // Y up, front = CCW
-	 0.0f,   0.5f,   1.0f, 0.0f, 0.0f,
-	-0.5f,  -0.5f,   0.0f, 1.0f, 0.0f,
-	 0.5f,  -0.5f,   0.0f, 0.0f, 1.0f
+	 0.0f,   -0.5f,   1.0f, 0.0f, 0.0f,
+	-0.5f,    0.5f,   0.0f, 1.0f, 0.0f,
+	 0.5f,    0.5f,   0.0f, 0.0f, 1.0f
 };
 
-TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
+TrianglePipline::TrianglePipline(QVulkanWindow* window)
 	:window_(window)
-{
-	QList<int> sampleCounts = window->supportedSampleCounts();
-	if (!sampleCounts.isEmpty()) {
-		window->setSampleCount(sampleCounts.back());
-	}
-}
+{}
 
-void TriangleRenderer::initResources()
+void TrianglePipline::init()
 {
 	vk::Device device = window_->device();
-
 	const int concurrentFrameCount = window_->concurrentFrameCount();
 	vk::PhysicalDeviceLimits limits = window_->physicalDeviceProperties()->limits;
+
 	vk::BufferCreateInfo vertexBufferInfo;
 	vertexBufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
 	vertexBufferInfo.size = sizeof(vertexData);
@@ -68,8 +60,8 @@ void TriangleRenderer::initResources()
 	vk::GraphicsPipelineCreateInfo piplineInfo;
 	piplineInfo.stageCount = 2;
 
-	vk::ShaderModule vertShader = loadShader("./color_vert.spv");
-	vk::ShaderModule fragShader = loadShader("./color_frag.spv");
+	vk::ShaderModule vertShader = loadShader(device, "./triangle_vert.spv");
+	vk::ShaderModule fragShader = loadShader(device, "./triangle_frag.spv");
 
 	vk::PipelineShaderStageCreateInfo piplineShaderStage[2] = {
 		{
@@ -152,15 +144,56 @@ void TriangleRenderer::initResources()
 	device.destroyShaderModule(fragShader);
 }
 
-void TriangleRenderer::initSwapChainResources()
+void TrianglePipline::render()
 {
+	vk::Device device = window_->device();
+
+	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
+
+	vk::ClearValue clearValues[3] = {
+	vk::ClearColorValue(std::array<float,4>{1.0f,0.0f,0.0f,1.0f }),
+	vk::ClearDepthStencilValue(1.0f,0),
+	vk::ClearColorValue(std::array<float,4>{ 0.0f,0.0f,0.0f,0.0f }),
+	};
+
+	vk::CommandBufferBeginInfo cmdBeginInfo;
+	cmdBeginInfo.flags = vk::CommandBufferUsageFlagBits::eRenderPassContinue;
+
+	vk::RenderPassBeginInfo beginInfo;
+	beginInfo.renderPass = window_->defaultRenderPass();
+	beginInfo.framebuffer = window_->currentFramebuffer();
+	beginInfo.renderArea.extent.width = window_->width();
+	beginInfo.renderArea.extent.height = window_->height();
+	beginInfo.clearValueCount = window_->sampleCountFlagBits() > VK_SAMPLE_COUNT_1_BIT ? 3 : 2;
+	beginInfo.pClearValues = clearValues;
+
+	cmdBuffer.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
+	vk::Viewport viewport;
+	viewport.x = 0;
+	viewport.y = 0;
+	viewport.width = window_->width();
+	viewport.height = window_->height();
+
+	viewport.minDepth = 0;
+	viewport.maxDepth = 1;
+	cmdBuffer.setViewport(0, viewport);
+
+	vk::Rect2D scissor;
+	scissor.offset.x = scissor.offset.y = 0;
+	scissor.extent.width = window_->width();
+	scissor.extent.height = window_->height();
+	cmdBuffer.setScissor(0, scissor);
+	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
+	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[window_->currentFrame()], 0, nullptr);
+	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
+	cmdBuffer.draw(3, 1, 0, 0);
+	cmdBuffer.endRenderPass();
 }
 
-void TriangleRenderer::releaseSwapChainResources()
-{
-}
 
-void TriangleRenderer::releaseResources() {
+
+void TrianglePipline::destroy()
+{
 	vk::Device device = window_->device();
 	device.destroyPipeline(pipline_);
 	device.destroyPipelineCache(piplineCache_);
@@ -169,71 +202,4 @@ void TriangleRenderer::releaseResources() {
 	device.destroyDescriptorPool(descPool_);
 	device.destroyBuffer(vertexBuffer_);
 	device.freeMemory(vertexDevMemory_);
-}
-
-void TriangleRenderer::startNextFrame() {
-	vk::Device device = window_->device();
-	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
-	const QSize size = window_->swapChainImageSize();
-
-	vk::ClearValue clearValues[3] = {
-		vk::ClearColorValue(std::array<float,4>{1.0f,0.0f,0.0f,1.0f }),
-		vk::ClearDepthStencilValue(1.0f,0),
-		vk::ClearColorValue(std::array<float,4>{ 0.0f,0.5f,0.9f,1.0f }),
-	};
-
-	vk::RenderPassBeginInfo beginInfo;
-	beginInfo.renderPass = window_->defaultRenderPass();
-	beginInfo.framebuffer = window_->currentFramebuffer();
-	beginInfo.renderArea.extent.width = size.width();
-	beginInfo.renderArea.extent.height = size.height();
-	beginInfo.clearValueCount = window_->sampleCountFlagBits() > VK_SAMPLE_COUNT_1_BIT ? 3 : 2;
-	beginInfo.pClearValues = clearValues;
-
-	cmdBuffer.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
-
-	vk::Viewport viewport;
-	viewport.x = 0;
-	viewport.y = size.height();
-	viewport.width = size.width();
-	viewport.height = -size.height();
-
-	viewport.minDepth = 0;
-	viewport.maxDepth = 1;
-	cmdBuffer.setViewport(0, viewport);
-
-	vk::Rect2D scissor;
-	scissor.offset.x = scissor.offset.y = 0;
-	scissor.extent.width = size.width();
-	scissor.extent.height = size.height();
-	cmdBuffer.setScissor(0, scissor);
-
-	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
-
-	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[window_->currentFrame()], 0, nullptr);
-
-	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
-
-	cmdBuffer.draw(3, 1, 0, 0);
-
-	cmdBuffer.endRenderPass();
-
-	window_->frameReady();
-	window_->requestUpdate();
-}
-
-vk::ShaderModule TriangleRenderer::loadShader(const QString& name)
-{
-	QFile file(name);
-	if (!file.open(QIODevice::ReadOnly)) {
-		qWarning("Failed to read shader %s", qPrintable(name));
-		return nullptr;
-	}
-	QByteArray blob = file.readAll();
-	file.close();
-	vk::ShaderModuleCreateInfo shaderInfo;
-	shaderInfo.codeSize = blob.size();
-	shaderInfo.pCode = reinterpret_cast<const uint32_t*>(blob.constData());
-	vk::Device device = window_->device();
-	return device.createShaderModule(shaderInfo);
 }

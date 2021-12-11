@@ -3,9 +3,9 @@
 
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
-class TriangleRenderer: public QVulkanWindowRenderer {
+class VulkanRenderer: public QVulkanWindowRenderer {
 public:
-	TriangleRenderer(QVulkanWindow * window);
+	VulkanRenderer(QVulkanWindow * window);
 	void initResources() override;
 	void initSwapChainResources() override;
 	void releaseSwapChainResources() override;
@@ -19,7 +19,7 @@ private:
 
 class VulkanWindow: public QVulkanWindow{
 public:
-	QVulkanWindowRenderer* createRenderer() override{ return new TriangleRenderer(this); }
+	QVulkanWindowRenderer* createRenderer() override{ return new VulkanRenderer(this); }
 };
 
 #endif // VulkanWindow_h__

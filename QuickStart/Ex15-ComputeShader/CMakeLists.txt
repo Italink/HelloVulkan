@@ -18,4 +18,4 @@ endforeach()
 target_link_libraries(${ProjectId} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 set_target_properties(${ProjectId} PROPERTIES 
-                      FOLDER "Examples")
+                      FOLDER "Examples") 

@@ -5,11 +5,11 @@
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 
-TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
+VulkanRenderer::VulkanRenderer(QVulkanWindow* window)
 	:window_(window){
 }
 
-void TriangleRenderer::initResources(){	
+void VulkanRenderer::initResources(){	
 	QVector<QImage> images = createImages({800,600}, {QColor(0, 100, 200), QColor(50, 200, 100),QColor(255,0,10),QColor(15,15,15)});
 	for (int i = 0; i < images.size(); i++) {
 		images[i].save("output"+QString::number(i)+".png");
@@ -17,25 +17,25 @@ void TriangleRenderer::initResources(){
 	QDesktopServices::openUrl(QUrl("file:"  , QUrl::TolerantMode));
 }
 
-void TriangleRenderer::initSwapChainResources()
+void VulkanRenderer::initSwapChainResources()
 {
 
 }
 
-void TriangleRenderer::releaseSwapChainResources()
+void VulkanRenderer::releaseSwapChainResources()
 {
 
 }
 
-void TriangleRenderer::releaseResources() {
+void VulkanRenderer::releaseResources() {
 
 }
 
-void TriangleRenderer::startNextFrame() {
+void VulkanRenderer::startNextFrame() {
 }
 
 
-QVector<QImage> TriangleRenderer::createImages(QSize size, QVector<QColor> colors)
+QVector<QImage> VulkanRenderer::createImages(QSize size, QVector<QColor> colors)
 {
 	if(colors.isEmpty())
 		return {};

@@ -18,7 +18,6 @@ int main(int argc, char* argv[])
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance.vkInstance());
 
 	QLoggingCategory::setFilterRules(QStringLiteral("qt.vulkan=true"));
-	
 	VulkanWindow vkWindow;
 	vkWindow.setVulkanInstance(&instance);
 	vkWindow.resize(1024, 768);

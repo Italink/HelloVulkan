@@ -1,0 +1,37 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+
+layout(constant_id = 0) const int DISPLAY_ID = 0;
+
+layout (local_size_x = 2, local_size_y = 2, local_size_z = 1 ) in;
+
+layout(std140, binding = 0) buffer buf{
+   mat4 data;
+};
+
+#define WorkGroupId (gl_WorkGroupID.x*gl_NumWorkGroups.y + gl_WorkGroupID.y)
+
+#define LocalId (gl_LocalInvocationID.x * 2 + gl_LocalInvocationID.y)
+
+#define GlobalId (gl_GlobalInvocationID.x * gl_NumWorkGroups.y * 2 + gl_GlobalInvocationID.y)
+
+shared uint ShaderId;
+
+void main() {
+    ShaderId = atomicAdd(ShaderId ,1);
+    switch(DISPLAY_ID){
+        case 0:
+            data[gl_GlobalInvocationID.x][gl_GlobalInvocationID.y] = WorkGroupId;
+            break;
+        case 1:
+            data[gl_GlobalInvocationID.x][gl_GlobalInvocationID.y] = LocalId;
+            break;
+        case 2:
+            data[gl_GlobalInvocationID.x][gl_GlobalInvocationID.y] = GlobalId;
+            break;
+        case 3:
+            data[gl_GlobalInvocationID.x][gl_GlobalInvocationID.y] = ShaderId;
+            break;
+    }
+  
+}

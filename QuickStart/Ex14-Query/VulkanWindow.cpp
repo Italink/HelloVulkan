@@ -194,6 +194,9 @@ void TriangleRenderer::releaseResources() {
 	device.destroyDescriptorPool(descPool_);
 	device.destroyBuffer(vertexBuffer_);
 	device.freeMemory(vertexDevMemory_);
+	device.destroyQueryPool(occlusionQueryPool_);
+	device.destroyQueryPool(timestampQueryPool_);
+	device.destroyQueryPool(piplineQueryPool_);
 }
 
 void TriangleRenderer::startNextFrame() {

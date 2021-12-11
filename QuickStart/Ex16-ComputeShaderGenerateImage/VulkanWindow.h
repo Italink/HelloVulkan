@@ -12,14 +12,11 @@ public:
 	void releaseResources() override;
 	void startNextFrame() override;
 private:
-	QVector<QImage> createImages(QSize size, QVector<QColor> colors);
+	vk::ShaderModule loadShader(const QString& name);
+
+	QImage generateImage(QSize size);
 private:
 	QVulkanWindow* window_ = nullptr;
-	struct FramebufferAttachment{
-		vk::Image image;
-		vk::DeviceMemory imageMemroy;
-		vk::ImageView imageView;
-	};
 };
 
 class VulkanWindow: public QVulkanWindow{

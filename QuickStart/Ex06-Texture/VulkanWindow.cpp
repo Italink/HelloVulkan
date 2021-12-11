@@ -10,7 +10,7 @@ static float vertexData[] = { // Y up, front = CCW
 	 0.5f, -0.5f,   1, 1,
 	 0.5f,  0.5f,   1, 0,
 	-0.5f,  0.5f,   0, 0,
-}; 
+};
 
 static uint16_t indexData[] = {
 	0,1,2,
@@ -24,7 +24,7 @@ static inline vk::DeviceSize aligned(vk::DeviceSize v, vk::DeviceSize byteAlign)
 TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
 	:window_(window)
 {
-	QList<int> sampleCounts= window->supportedSampleCounts();
+	QList<int> sampleCounts = window->supportedSampleCounts();
 	if (!sampleCounts.isEmpty()) {
 		window->setSampleCount(sampleCounts.back());
 	}
@@ -36,7 +36,7 @@ void TriangleRenderer::initResources()
 
 	const int concurrentFrameCount = window_->concurrentFrameCount();
 	vk::PhysicalDeviceLimits limits = window_->physicalDeviceProperties()->limits;
-	
+
 	vk::BufferCreateInfo vertexBufferInfo;
 	vertexBufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
 	vertexBufferInfo.size = sizeof(vertexData);
@@ -56,9 +56,9 @@ void TriangleRenderer::initResources()
 	vk::MemoryRequirements indexMemReq = device.getBufferMemoryRequirements(indexBuffer_);
 	vk::MemoryAllocateInfo indexMemInfo(indexMemReq.size, window_->hostVisibleMemoryIndex());
 	indexDevMemory_ = device.allocateMemory(indexMemInfo);
-	device.bindBufferMemory(indexBuffer_,indexDevMemory_,0);
-	uint8_t * indexBufferMemPtr = (uint8_t *)device.mapMemory(indexDevMemory_,0,indexMemReq.size);
-	memcpy(indexBufferMemPtr,indexData,sizeof(indexData));
+	device.bindBufferMemory(indexBuffer_, indexDevMemory_, 0);
+	uint8_t* indexBufferMemPtr = (uint8_t*)device.mapMemory(indexDevMemory_, 0, indexMemReq.size);
+	memcpy(indexBufferMemPtr, indexData, sizeof(indexData));
 	device.unmapMemory(indexDevMemory_);
 
 	vk::DeviceSize uniformAllocSize = aligned(16 * sizeof(float), limits.minUniformBufferOffsetAlignment);
@@ -89,7 +89,7 @@ void TriangleRenderer::initResources()
 	samplerInfo.addressModeW = vk::SamplerAddressMode::eClampToEdge;
 	samplerInfo.maxAnisotropy = 1.0f;
 	sampler_ = device.createSampler(samplerInfo);
-	
+
 	vk::PhysicalDevice physicalDevice = window_->physicalDevice();
 
 	QImage img("./qt256.png");
@@ -111,7 +111,7 @@ void TriangleRenderer::initResources()
 	imageInfo.samples = vk::SampleCountFlagBits::e1;
 	imageInfo.tiling = vk::ImageTiling::eLinear;
 	imageInfo.usage = vk::ImageUsageFlagBits::eSampled;
-	imageInfo.initialLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+	imageInfo.initialLayout = vk::ImageLayout::ePreinitialized;
 	image_ = device.createImage(imageInfo);
 
 	vk::MemoryRequirements texMemReq = device.getImageMemoryRequirements(image_);
@@ -140,7 +140,35 @@ void TriangleRenderer::initResources()
 	imageViewInfo.subresourceRange.levelCount = imageViewInfo.subresourceRange.layerCount = 1;
 	imageView_ = device.createImageView(imageViewInfo);
 
-	vk::DescriptorPoolSize descPoolSize[2] ={
+	vk::CommandBufferAllocateInfo cmdBufferAllocInfo;
+	cmdBufferAllocInfo.commandBufferCount = 1;
+	cmdBufferAllocInfo.commandPool = window_->graphicsCommandPool();
+	cmdBufferAllocInfo.level = vk::CommandBufferLevel::ePrimary;
+	vk::CommandBuffer cmdBuffer = device.allocateCommandBuffers(cmdBufferAllocInfo).front();
+	vk::CommandBufferBeginInfo cmdBufferBeginInfo;
+	cmdBufferBeginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+	cmdBuffer.begin(cmdBufferBeginInfo);
+
+	vk::ImageMemoryBarrier barrier;
+	barrier.image = image_;
+	barrier.oldLayout = vk::ImageLayout::ePreinitialized;
+	barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+	barrier.srcAccessMask = vk::AccessFlagBits::eHostWrite;
+	barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+	barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+	barrier.subresourceRange.layerCount = barrier.subresourceRange.levelCount = 1;
+	cmdBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eHost, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
+	cmdBuffer.end();
+
+	vk::SubmitInfo submitInfo;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &cmdBuffer;
+
+	vk::Queue queue = window_->graphicsQueue();
+	queue.submit(submitInfo);
+	queue.waitIdle();
+
+	vk::DescriptorPoolSize descPoolSize[2] = {
 		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, (uint32_t)concurrentFrameCount),
 		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, (uint32_t)concurrentFrameCount)
 	};
@@ -276,20 +304,17 @@ void TriangleRenderer::initResources()
 
 	device.destroyShaderModule(vertShader);
 	device.destroyShaderModule(fragShader);
-
 }
 
 void TriangleRenderer::initSwapChainResources()
 {
-
 }
 
 void TriangleRenderer::releaseSwapChainResources()
 {
-
 }
 
-void TriangleRenderer::releaseResources(){
+void TriangleRenderer::releaseResources() {
 	vk::Device device = window_->device();
 	device.destroyPipeline(pipline_);
 	device.destroyPipelineCache(piplineCache_);
@@ -299,12 +324,12 @@ void TriangleRenderer::releaseResources(){
 	device.destroyBuffer(vertexBuffer_);
 	device.freeMemory(vertexDevMemory_);
 	device.destroyBuffer(indexBuffer_);
-	device.freeMemory(indexDevMemory_);	
+	device.freeMemory(indexDevMemory_);
 	device.destroyBuffer(uniformBuffer_);
 	device.freeMemory(uniformDevMemory_);
 }
 
-void TriangleRenderer::startNextFrame(){
+void TriangleRenderer::startNextFrame() {
 	vk::Device device = window_->device();
 	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
 	const QSize size = window_->swapChainImageSize();
@@ -347,16 +372,15 @@ void TriangleRenderer::startNextFrame(){
 	scissor.extent.height = size.height();
 	cmdBuffer.setScissor(0, scissor);
 
-
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
 
 	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[window_->currentFrame()], 0, nullptr);
 
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
 
-	cmdBuffer.bindIndexBuffer(indexBuffer_,0,vk::IndexType::eUint16);
+	cmdBuffer.bindIndexBuffer(indexBuffer_, 0, vk::IndexType::eUint16);
 
-	cmdBuffer.drawIndexed(6,1,0,0,0);
+	cmdBuffer.drawIndexed(6, 1, 0, 0, 0);
 
 	cmdBuffer.endRenderPass();
 

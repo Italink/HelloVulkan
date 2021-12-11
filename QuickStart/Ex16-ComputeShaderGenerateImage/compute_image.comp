@@ -1,0 +1,13 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+
+#define LOCAL_SIZE 20
+
+layout(local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = 1 ) in;
+
+layout(binding = 0, rgba8) uniform image2D cimage;
+
+void main() {
+	
+	imageStore(cimage,ivec2(gl_GlobalInvocationID.xy),vec4(gl_GlobalInvocationID.xy/float(gl_NumWorkGroups.xy*LOCAL_SIZE),0.0,1.0));
+}

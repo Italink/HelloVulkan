@@ -3,6 +3,7 @@
 
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
+
 class TriangleRenderer: public QVulkanWindowRenderer {
 public:
 	TriangleRenderer(QVulkanWindow * window);

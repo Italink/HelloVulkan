@@ -4,35 +4,30 @@
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
-
-TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
-	:window_(window){
+VulkanRenderer::VulkanRenderer(QVulkanWindow* window)
+	:window_(window) {
 }
 
-void TriangleRenderer::initResources(){
-	QImage image = createImage({800,600},QColor(0,100,200));
+void VulkanRenderer::initResources() {
+	QImage image = createImage({ 800,600 }, QColor(0, 100, 200));
 	image.save("output.png");
-	QDesktopServices::openUrl(QUrl("file:"  , QUrl::TolerantMode));
+	QDesktopServices::openUrl(QUrl("file:", QUrl::TolerantMode));
 }
 
-void TriangleRenderer::initSwapChainResources(){
-
+void VulkanRenderer::initSwapChainResources() {
 }
 
-void TriangleRenderer::releaseSwapChainResources()
+void VulkanRenderer::releaseSwapChainResources()
 {
-
 }
 
-void TriangleRenderer::releaseResources() {
-
+void VulkanRenderer::releaseResources() {
 }
 
-void TriangleRenderer::startNextFrame() {
+void VulkanRenderer::startNextFrame() {
 }
 
-
-QImage TriangleRenderer::createImage(QSize size, QColor color)
+QImage VulkanRenderer::createImage(QSize size, QColor color)
 {
 	vk::Device device = window_->device();
 
@@ -173,7 +168,7 @@ QImage TriangleRenderer::createImage(QSize size, QColor color)
 		{},
 		0, nullptr,
 		0, nullptr,
-		1, & barrier
+		1, &barrier
 	);
 
 	vk::ImageCopy imageCopy;
@@ -188,6 +183,7 @@ QImage TriangleRenderer::createImage(QSize size, QColor color)
 	cmdBuffer.copyImage(colorAttachment, vk::ImageLayout::eTransferSrcOptimal, stagingImage, vk::ImageLayout::eTransferDstOptimal, imageCopy);
 
 	cmdBuffer.end();
+
 	vk::Queue graphicsQueue = window_->graphicsQueue();
 	vk::SubmitInfo submitInfo;
 	submitInfo.commandBufferCount = 1;
