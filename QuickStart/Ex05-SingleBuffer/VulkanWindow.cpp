@@ -41,7 +41,7 @@ void TriangleRenderer::initResources()
 
 	indexBufferInfo_.offset = vertexBufferInfo_.range;
 	indexBufferInfo_.range = aligned(sizeof(indexData), limits.minUniformBufferOffsetAlignment);
-	
+
 	vk::DeviceSize uniformAllocSize_ = aligned(sizeof(float) * 16, limits.minUniformBufferOffsetAlignment);
 
 	vk::BufferCreateInfo singleBufferInfo;
@@ -104,31 +104,31 @@ void TriangleRenderer::initResources()
 	vk::ShaderModule vertShader = loadShader("./color_vert.spv");
 	vk::ShaderModule fragShader = loadShader("./color_frag.spv");
 
-	vk::PipelineShaderStageCreateInfo piplineShaderStage[2] = {
-		{
-			{},
-			vk::ShaderStageFlagBits::eVertex,
-			vertShader,
-			"main",
-			nullptr
-		},
-		{
-			{},
-			vk::ShaderStageFlagBits::eFragment,
-			fragShader,
-			"main",
-			nullptr
-		}
-	};
-
+	vk::PipelineShaderStageCreateInfo piplineShaderStage[2];
+	piplineShaderStage[0].stage = vk::ShaderStageFlagBits::eVertex;
+	piplineShaderStage[0].module = vertShader;
+	piplineShaderStage[0].pName = "main";
+	piplineShaderStage[1].stage = vk::ShaderStageFlagBits::eFragment;
+	piplineShaderStage[1].module = fragShader;
+	piplineShaderStage[1].pName = "main";
+	piplineInfo.pStages = piplineShaderStage;
 	piplineInfo.pStages = piplineShaderStage;
 
-	vk::VertexInputBindingDescription vertexBindingDesc(0, 5 * sizeof(float), vk::VertexInputRate::eVertex);
+	vk::VertexInputBindingDescription vertexBindingDesc;
+	vertexBindingDesc.binding = 0;
+	vertexBindingDesc.stride = 5 * sizeof(float);
+	vertexBindingDesc.inputRate = vk::VertexInputRate::eVertex;
 
-	vk::VertexInputAttributeDescription vertexAttrDesc[] = {
-		{0,0,vk::Format::eR32G32Sfloat,0},
-		{1,0,vk::Format::eR32G32B32Sfloat,2 * sizeof(float)}
-	};
+	vk::VertexInputAttributeDescription vertexAttrDesc[2];
+	vertexAttrDesc[0].binding = 0;
+	vertexAttrDesc[0].location = 0;
+	vertexAttrDesc[0].format = vk::Format::eR32G32Sfloat;
+	vertexAttrDesc[0].offset = 0;
+	vertexAttrDesc[1].binding = 0;
+	vertexAttrDesc[1].location = 1;
+	vertexAttrDesc[1].format = vk::Format::eR32G32B32Sfloat;
+	vertexAttrDesc[1].offset = 2 * sizeof(float);
+
 	vk::PipelineVertexInputStateCreateInfo vertexInputState({}, 1, &vertexBindingDesc, 2, vertexAttrDesc);
 	piplineInfo.pVertexInputState = &vertexInputState;
 
@@ -183,17 +183,14 @@ void TriangleRenderer::initResources()
 
 	device.destroyShaderModule(vertShader);
 	device.destroyShaderModule(fragShader);
-
 }
 
 void TriangleRenderer::initSwapChainResources()
 {
-
 }
 
 void TriangleRenderer::releaseSwapChainResources()
 {
-
 }
 
 void TriangleRenderer::releaseResources() {

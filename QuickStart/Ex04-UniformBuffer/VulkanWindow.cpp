@@ -9,7 +9,7 @@ static float vertexData[] = { // Y up, front = CCW
 	 0.5f, -0.5f,		 0.0f, 1.0f, 0.0f,
 	 0.5f,  0.5f,		 0.0f, 0.0f, 1.0f,
 	-0.5f,  0.5f,		 1.0f, 1.0f, 1.0f
-}; 
+};
 
 static uint16_t indexData[] = {
 	0,1,2,
@@ -23,7 +23,7 @@ static inline vk::DeviceSize aligned(vk::DeviceSize v, vk::DeviceSize byteAlign)
 TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
 	:window_(window)
 {
-	QList<int> sampleCounts= window->supportedSampleCounts();
+	QList<int> sampleCounts = window->supportedSampleCounts();
 	if (!sampleCounts.isEmpty()) {
 		window->setSampleCount(sampleCounts.back());
 	}
@@ -35,7 +35,7 @@ void TriangleRenderer::initResources()
 
 	const int concurrentFrameCount = window_->concurrentFrameCount();
 	vk::PhysicalDeviceLimits limits = window_->physicalDeviceProperties()->limits;
-	
+
 	vk::BufferCreateInfo vertexBufferInfo;
 	vertexBufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
 	vertexBufferInfo.size = sizeof(vertexData);
@@ -55,9 +55,9 @@ void TriangleRenderer::initResources()
 	vk::MemoryRequirements indexMemReq = device.getBufferMemoryRequirements(indexBuffer_);
 	vk::MemoryAllocateInfo indexMemInfo(indexMemReq.size, window_->hostVisibleMemoryIndex());
 	indexDevMemory_ = device.allocateMemory(indexMemInfo);
-	device.bindBufferMemory(indexBuffer_,indexDevMemory_,0);
-	uint8_t * indexBufferMemPtr = (uint8_t *)device.mapMemory(indexDevMemory_,0,indexMemReq.size);
-	memcpy(indexBufferMemPtr,indexData,sizeof(indexData));
+	device.bindBufferMemory(indexBuffer_, indexDevMemory_, 0);
+	uint8_t* indexBufferMemPtr = (uint8_t*)device.mapMemory(indexDevMemory_, 0, indexMemReq.size);
+	memcpy(indexBufferMemPtr, indexData, sizeof(indexData));
 	device.unmapMemory(indexDevMemory_);
 
 	vk::DeviceSize uniformAllocSize = aligned(16 * sizeof(float), limits.minUniformBufferOffsetAlignment);
@@ -119,31 +119,30 @@ void TriangleRenderer::initResources()
 	vk::ShaderModule vertShader = loadShader("./color_vert.spv");
 	vk::ShaderModule fragShader = loadShader("./color_frag.spv");
 
-	vk::PipelineShaderStageCreateInfo piplineShaderStage[2] = {
-		{
-			{},
-			vk::ShaderStageFlagBits::eVertex,
-			vertShader,
-			"main",
-			nullptr
-		},
-		{
-			{},
-			vk::ShaderStageFlagBits::eFragment,
-			fragShader,
-			"main",
-			nullptr
-		}
-	};
-
+	vk::PipelineShaderStageCreateInfo piplineShaderStage[2];
+	piplineShaderStage[0].stage = vk::ShaderStageFlagBits::eVertex;
+	piplineShaderStage[0].module = vertShader;
+	piplineShaderStage[0].pName = "main";
+	piplineShaderStage[1].stage = vk::ShaderStageFlagBits::eFragment;
+	piplineShaderStage[1].module = fragShader;
+	piplineShaderStage[1].pName = "main";
 	piplineInfo.pStages = piplineShaderStage;
 
-	vk::VertexInputBindingDescription vertexBindingDesc(0, 5 * sizeof(float), vk::VertexInputRate::eVertex);
+	vk::VertexInputBindingDescription vertexBindingDesc;
+	vertexBindingDesc.binding = 0;
+	vertexBindingDesc.stride = 5 * sizeof(float);
+	vertexBindingDesc.inputRate = vk::VertexInputRate::eVertex;
 
-	vk::VertexInputAttributeDescription vertexAttrDesc[] = {
-		{0,0,vk::Format::eR32G32Sfloat,0},
-		{1,0,vk::Format::eR32G32B32Sfloat,2 * sizeof(float)}
-	};
+	vk::VertexInputAttributeDescription vertexAttrDesc[2];
+	vertexAttrDesc[0].binding = 0;
+	vertexAttrDesc[0].location = 0;
+	vertexAttrDesc[0].format = vk::Format::eR32G32Sfloat;
+	vertexAttrDesc[0].offset = 0;
+	vertexAttrDesc[1].binding = 0;
+	vertexAttrDesc[1].location = 1;
+	vertexAttrDesc[1].format = vk::Format::eR32G32B32Sfloat;
+	vertexAttrDesc[1].offset = 2 * sizeof(float);
+
 	vk::PipelineVertexInputStateCreateInfo vertexInputState({}, 1, &vertexBindingDesc, 2, vertexAttrDesc);
 	piplineInfo.pVertexInputState = &vertexInputState;
 
@@ -198,20 +197,17 @@ void TriangleRenderer::initResources()
 
 	device.destroyShaderModule(vertShader);
 	device.destroyShaderModule(fragShader);
-
 }
 
 void TriangleRenderer::initSwapChainResources()
 {
-
 }
 
 void TriangleRenderer::releaseSwapChainResources()
 {
-
 }
 
-void TriangleRenderer::releaseResources(){
+void TriangleRenderer::releaseResources() {
 	vk::Device device = window_->device();
 	device.destroyPipeline(pipline_);
 	device.destroyPipelineCache(piplineCache_);
@@ -221,12 +217,12 @@ void TriangleRenderer::releaseResources(){
 	device.destroyBuffer(vertexBuffer_);
 	device.freeMemory(vertexDevMemory_);
 	device.destroyBuffer(indexBuffer_);
-	device.freeMemory(indexDevMemory_);	
+	device.freeMemory(indexDevMemory_);
 	device.destroyBuffer(uniformBuffer_);
 	device.freeMemory(uniformDevMemory_);
 }
 
-void TriangleRenderer::startNextFrame(){
+void TriangleRenderer::startNextFrame() {
 	vk::Device device = window_->device();
 	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
 	const QSize size = window_->swapChainImageSize();
@@ -275,9 +271,9 @@ void TriangleRenderer::startNextFrame(){
 
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
 
-	cmdBuffer.bindIndexBuffer(indexBuffer_,0,vk::IndexType::eUint16);
+	cmdBuffer.bindIndexBuffer(indexBuffer_, 0, vk::IndexType::eUint16);
 
-	cmdBuffer.drawIndexed(6,1,0,0,0);
+	cmdBuffer.drawIndexed(6, 1, 0, 0, 0);
 
 	cmdBuffer.endRenderPass();
 

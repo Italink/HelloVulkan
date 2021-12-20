@@ -18,7 +18,7 @@ static float instanceData[] = {
 TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
 	:window_(window)
 {
-	QList<int> sampleCounts= window->supportedSampleCounts();
+	QList<int> sampleCounts = window->supportedSampleCounts();
 	if (!sampleCounts.isEmpty()) {
 		window->setSampleCount(sampleCounts.back());
 	}
@@ -55,7 +55,6 @@ void TriangleRenderer::initResources()
 	memcpy(instanceBufferMemPtr, instanceData, sizeof(instanceData));
 	device.unmapMemory(instanceDevMemory_);
 
-
 	vk::DescriptorPoolSize descPoolSize(vk::DescriptorType::eUniformBuffer, (uint32_t)concurrentFrameCount);
 	vk::DescriptorPoolCreateInfo descPoolInfo;
 	descPoolInfo.maxSets = concurrentFrameCount;
@@ -89,37 +88,27 @@ void TriangleRenderer::initResources()
 	vk::ShaderModule vertShader = loadShader("./color_vert.spv");
 	vk::ShaderModule fragShader = loadShader("./color_frag.spv");
 
-	vk::PipelineShaderStageCreateInfo piplineShaderStage[2] = {
-		{
-			{},
-			vk::ShaderStageFlagBits::eVertex,
-			vertShader,
-			"main",
-			nullptr
-		},
-		{
-			{},
-			vk::ShaderStageFlagBits::eFragment,
-			fragShader,
-			"main",
-			nullptr
-		}
-	};
-
+	vk::PipelineShaderStageCreateInfo piplineShaderStage[2];
+	piplineShaderStage[0].stage = vk::ShaderStageFlagBits::eVertex;
+	piplineShaderStage[0].module = vertShader;
+	piplineShaderStage[0].pName = "main";
+	piplineShaderStage[1].stage = vk::ShaderStageFlagBits::eFragment;
+	piplineShaderStage[1].module = fragShader;
+	piplineShaderStage[1].pName = "main";
 	piplineInfo.pStages = piplineShaderStage;
 
-	std::array<vk::VertexInputBindingDescription,2> vertexBindingDesc = {
+	std::array<vk::VertexInputBindingDescription, 2> vertexBindingDesc = {
 		vk::VertexInputBindingDescription{0, 5 * sizeof(float), vk::VertexInputRate::eVertex},
 		vk::VertexInputBindingDescription{1, 2 * sizeof(float), vk::VertexInputRate::eInstance}
 	};
 
-	std::array<vk::VertexInputAttributeDescription,3> vertexAttrDesc ={
+	std::array<vk::VertexInputAttributeDescription, 3> vertexAttrDesc = {
 		vk::VertexInputAttributeDescription{ 0,0,vk::Format::eR32G32Sfloat,0 },
 		vk::VertexInputAttributeDescription{ 1,0,vk::Format::eR32G32B32Sfloat,2 * sizeof(float) },
 		vk::VertexInputAttributeDescription{ 2,1,vk::Format::eR32G32Sfloat,0}
 	};
 
-	vk::PipelineVertexInputStateCreateInfo vertexInputState({},vertexBindingDesc,vertexAttrDesc);
+	vk::PipelineVertexInputStateCreateInfo vertexInputState({}, vertexBindingDesc, vertexAttrDesc);
 	piplineInfo.pVertexInputState = &vertexInputState;
 
 	vk::PipelineInputAssemblyStateCreateInfo vertexAssemblyState({}, vk::PrimitiveTopology::eTriangleList);
@@ -177,15 +166,13 @@ void TriangleRenderer::initResources()
 
 void TriangleRenderer::initSwapChainResources()
 {
-
 }
 
 void TriangleRenderer::releaseSwapChainResources()
 {
-
 }
 
-void TriangleRenderer::releaseResources(){
+void TriangleRenderer::releaseResources() {
 	vk::Device device = window_->device();
 	device.destroyPipeline(pipline_);
 	device.destroyPipelineCache(piplineCache_);
@@ -198,7 +185,7 @@ void TriangleRenderer::releaseResources(){
 	device.freeMemory(instanceDevMemory_);
 }
 
-void TriangleRenderer::startNextFrame(){
+void TriangleRenderer::startNextFrame() {
 	vk::Device device = window_->device();
 	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
 	const QSize size = window_->swapChainImageSize();
@@ -242,7 +229,7 @@ void TriangleRenderer::startNextFrame(){
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
 	cmdBuffer.bindVertexBuffers(1, instanceBuffer_, { 0 });
 
-	cmdBuffer.draw(3, std::size(instanceData)/2, 0, 0);
+	cmdBuffer.draw(3, std::size(instanceData) / 2, 0, 0);
 
 	cmdBuffer.endRenderPass();
 
