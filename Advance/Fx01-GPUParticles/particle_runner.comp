@@ -1,0 +1,41 @@
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+
+#define LOCAL_SIZE 32
+#define PARTICLE_MAX_SIZE 100000
+
+layout (local_size_x = LOCAL_SIZE, local_size_y = LOCAL_SIZE, local_size_z = 1 ) in;
+
+struct Particle{
+    vec3 position;
+    float life;
+    vec3 velocity;
+};
+
+layout(std140, binding = 0)  buffer InputParticle{
+    int inputCounter;
+    Particle intputParticles[PARTICLE_MAX_SIZE];
+};
+
+layout(std140, binding = 1) buffer OutputParticle{
+    int outputCounter;
+    Particle outputParticles[PARTICLE_MAX_SIZE];
+};
+
+
+#define GlobalId (gl_GlobalInvocationID.x * gl_NumWorkGroups.y * LOCAL_SIZE + gl_GlobalInvocationID.y)
+
+#define DEAD_TIME 5 
+
+void main() {
+    if( GlobalId >= inputCounter||intputParticles[GlobalId].life > DEAD_TIME) // 
+        return;
+    int currentIndex = atomicAdd(outputCounter,1);
+
+    outputParticles[currentIndex].life = intputParticles[GlobalId].life + 0.01;
+
+    outputParticles[currentIndex].position = intputParticles[GlobalId].position + intputParticles[GlobalId].velocity ;
+
+    outputParticles[currentIndex].velocity = intputParticles[GlobalId].velocity + vec3(0,0.00003,0) ;
+
+}
