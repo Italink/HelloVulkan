@@ -6,7 +6,7 @@ FullScreenPipline::FullScreenPipline(QVulkanWindow* window)
 	:window_(window)
 {}
 
-void FullScreenPipline::init(vk::ImageView image, vk::Sampler sampler)
+void FullScreenPipline::init()
 {
 	vk::Device device = window_->device();
 
@@ -32,15 +32,6 @@ void FullScreenPipline::init(vk::ImageView image, vk::Sampler sampler)
 
 	vk::DescriptorSetAllocateInfo descSetAllocInfo(descPool_, 1, &descSetLayout_);
 	descSet_ = device.allocateDescriptorSets(descSetAllocInfo).front();
-	vk::DescriptorImageInfo descImageInfo(sampler, image, vk::ImageLayout::eShaderReadOnlyOptimal);
-	vk::WriteDescriptorSet descWrite;
-	descWrite.dstSet = descSet_;
-	descWrite.dstBinding = 0;
-	descWrite.descriptorCount = 1;
-	descWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
-	descWrite.pImageInfo = &descImageInfo;
-
-	device.updateDescriptorSets(1, &descWrite, 0, nullptr);
 
 	vk::GraphicsPipelineCreateInfo piplineInfo;
 
@@ -157,4 +148,23 @@ void FullScreenPipline::render()
 
 void FullScreenPipline::destroy()
 {
+	vk::Device device = window_->device();
+	device.destroyDescriptorPool(descPool_);
+	device.destroyDescriptorSetLayout(descSetLayout_);
+	device.destroyPipeline(pipline_);
+	device.destroyPipelineCache(piplineCache_);
+	device.destroyPipelineLayout(piplineLayout_);
+}
+
+void FullScreenPipline::updateImage(vk::ImageView image, vk::Sampler sampler)
+{
+	vk::Device device = window_->device();
+	vk::DescriptorImageInfo descImageInfo(sampler, image, vk::ImageLayout::eShaderReadOnlyOptimal);
+	vk::WriteDescriptorSet descWrite;
+	descWrite.dstSet = descSet_;
+	descWrite.dstBinding = 0;
+	descWrite.descriptorCount = 1;
+	descWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+	descWrite.pImageInfo = &descImageInfo;
+	device.updateDescriptorSets(1, &descWrite, 0, nullptr);
 }

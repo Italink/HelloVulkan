@@ -24,8 +24,9 @@ TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
 
 void TriangleRenderer::initResources() {
 	trianglePipline_.init();
-	bloomPipline_.init();
-	fullScreenPipline_.init(bloomPipline_.frameBuffer_[0].imageView, bloomPipline_.sampler_);
+	bloomPipline_.initResource();
+	fullScreenPipline_.init();
+	fullScreenPipline_.updateImage(bloomPipline_.frameBuffer_[0].imageView, bloomPipline_.sampler_);
 }
 
 void TriangleRenderer::startNextFrame() {
@@ -39,10 +40,15 @@ void TriangleRenderer::startNextFrame() {
 void TriangleRenderer::releaseResources() {
 	trianglePipline_.destroy();
 	bloomPipline_.destroy();
+	fullScreenPipline_.destroy();
 }
 
 void TriangleRenderer::initSwapChainResources()
 {
+	if (bloomPipline_.isInitialized()) {
+		bloomPipline_.resizeFrameBuffer(window_->width(), window_->height());
+		fullScreenPipline_.updateImage(bloomPipline_.frameBuffer_[0].imageView, bloomPipline_.sampler_);
+	}
 }
 
 void TriangleRenderer::releaseSwapChainResources()

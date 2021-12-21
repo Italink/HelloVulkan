@@ -30,56 +30,19 @@ void TrianglePipline::init()
 	memcpy(vertexBufferMemPtr, vertexData, sizeof(vertexData));
 	device.unmapMemory(vertexDevMemory_);
 
-	vk::DescriptorPoolSize descPoolSize(vk::DescriptorType::eUniformBuffer, (uint32_t)concurrentFrameCount);
-	vk::DescriptorPoolCreateInfo descPoolInfo;
-	descPoolInfo.maxSets = concurrentFrameCount;
-	descPoolInfo.poolSizeCount = 1;
-	descPoolInfo.pPoolSizes = &descPoolSize;
-	descPool_ = device.createDescriptorPool(descPoolInfo);
-
-	vk::DescriptorSetLayoutBinding layoutBinding;
-	layoutBinding.binding = 0;
-	layoutBinding.descriptorType = vk::DescriptorType::eUniformBuffer;
-	layoutBinding.descriptorCount = 1;
-	layoutBinding.stageFlags = vk::ShaderStageFlagBits::eVertex;
-	layoutBinding.pImmutableSamplers = nullptr;
-
-	vk::DescriptorSetLayoutCreateInfo descLayoutInfo;
-	descLayoutInfo.pNext = nullptr;
-	descLayoutInfo.flags = {};
-	descLayoutInfo.bindingCount = 1;
-	descLayoutInfo.pBindings = &layoutBinding;
-
-	descSetLayout_ = device.createDescriptorSetLayout(descLayoutInfo);
-
-	for (int i = 0; i < concurrentFrameCount; ++i) {
-		vk::DescriptorSetAllocateInfo descSetAllocInfo(descPool_, 1, &descSetLayout_);
-		descSet_[i] = device.allocateDescriptorSets(descSetAllocInfo).front();
-	}
-
 	vk::GraphicsPipelineCreateInfo piplineInfo;
 	piplineInfo.stageCount = 2;
 
 	vk::ShaderModule vertShader = loadShader(device, "./triangle_vert.spv");
 	vk::ShaderModule fragShader = loadShader(device, "./triangle_frag.spv");
 
-	vk::PipelineShaderStageCreateInfo piplineShaderStage[2] = {
-		{
-			{},
-			vk::ShaderStageFlagBits::eVertex,
-			vertShader,
-			"main",
-			nullptr
-		},
-		{
-			{},
-			vk::ShaderStageFlagBits::eFragment,
-			fragShader,
-			"main",
-			nullptr
-		}
-	};
-
+	vk::PipelineShaderStageCreateInfo piplineShaderStage[2];
+	piplineShaderStage[0].stage = vk::ShaderStageFlagBits::eVertex;
+	piplineShaderStage[0].module = vertShader;
+	piplineShaderStage[0].pName = "main";
+	piplineShaderStage[1].stage = vk::ShaderStageFlagBits::eFragment;
+	piplineShaderStage[1].module = fragShader;
+	piplineShaderStage[1].pName = "main";
 	piplineInfo.pStages = piplineShaderStage;
 
 	vk::VertexInputBindingDescription vertexBindingDesc(0, 5 * sizeof(float), vk::VertexInputRate::eVertex);
@@ -130,8 +93,6 @@ void TrianglePipline::init()
 	piplineInfo.pDynamicState = &dynamicState;
 
 	vk::PipelineLayoutCreateInfo piplineLayoutInfo;
-	piplineLayoutInfo.setLayoutCount = 1;
-	piplineLayoutInfo.pSetLayouts = &descSetLayout_;
 	piplineLayout_ = device.createPipelineLayout(piplineLayoutInfo);
 	piplineInfo.layout = piplineLayout_;
 
@@ -184,13 +145,10 @@ void TrianglePipline::render()
 	scissor.extent.height = window_->height();
 	cmdBuffer.setScissor(0, scissor);
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
-	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[window_->currentFrame()], 0, nullptr);
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
 	cmdBuffer.draw(3, 1, 0, 0);
 	cmdBuffer.endRenderPass();
 }
-
-
 
 void TrianglePipline::destroy()
 {
@@ -198,8 +156,6 @@ void TrianglePipline::destroy()
 	device.destroyPipeline(pipline_);
 	device.destroyPipelineCache(piplineCache_);
 	device.destroyPipelineLayout(piplineLayout_);
-	device.destroyDescriptorSetLayout(descSetLayout_);
-	device.destroyDescriptorPool(descPool_);
 	device.destroyBuffer(vertexBuffer_);
 	device.freeMemory(vertexDevMemory_);
 }

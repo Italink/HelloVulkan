@@ -7,9 +7,10 @@
 class FullScreenPipline {
 public:
 	FullScreenPipline(QVulkanWindow* window);
-	void init(vk::ImageView image, vk::Sampler sampler);
+	void init();
 	void render();
 	void destroy();
+	void updateImage(vk::ImageView image, vk::Sampler sampler);
 protected:
 	vk::DescriptorPool descPool_;
 	vk::DescriptorSetLayout descSetLayout_;
