@@ -4,36 +4,40 @@
 
 BloomPipline::BloomPipline(QVulkanWindow* window)
 	:window_(window)
-{}
+{
+	setBlurSize(20);
+	setBlurStrength(10);
+}
 
-static inline vk::DeviceSize aligned(vk::DeviceSize v, vk::DeviceSize byteAlign) {
-	return (v + byteAlign - 1) & ~(byteAlign - 1);
+void BloomPipline::setBlurSize(int size)
+{
+	if (size <= 0 || size == blurParams_.size || size >= std::size(blurParams_.weight))
+		return;
+	int sum = 0, s = 1;
+	for (int i = size - 1; i >= 0; i--) {
+		blurParams_.weight[i] = (blurParams_.weight[0] + s);
+		++s;
+		sum += blurParams_.weight[i] * 2;
+	}
+	for (int i = 0; i < size; i++) {
+		blurParams_.weight[i] /= sum;
+	}
+}
+
+void BloomPipline::setBlurStrength(float strength)
+{
+	blurParams_.strength = strength;
+}
+
+void BloomPipline::setBlurScale(float scale)
+{
+	blurParams_.scale = scale;
 }
 
 void BloomPipline::initResource()
 {
 	vk::Device device = window_->device();
 	vk::PhysicalDeviceLimits limits = window_->physicalDeviceProperties()->limits;
-
-	vk::DeviceSize uniformAllocSize = aligned(2 * sizeof(float), limits.minUniformBufferOffsetAlignment);
-	vk::BufferCreateInfo uniformBufferInfo;
-	uniformBufferInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer;
-	uniformBufferInfo.size = uniformAllocSize;
-	uniformBuffer_ = device.createBuffer(uniformBufferInfo);
-	vk::MemoryRequirements uniformMemReq = device.getBufferMemoryRequirements(uniformBuffer_);
-	vk::MemoryAllocateInfo uniformMemAllocInfo(uniformMemReq.size, window_->hostVisibleMemoryIndex());
-	uniformDevMemory_ = device.allocateMemory(uniformMemAllocInfo);
-	device.bindBufferMemory(uniformBuffer_, uniformDevMemory_, 0);
-	uint8_t* uniformBufferMemPtr = (uint8_t*)device.mapMemory(uniformDevMemory_, 0, uniformMemReq.size);
-
-	float uniformData[2] = { 1,5.0 };
-
-	memcpy(uniformBufferMemPtr, uniformData, 2 * sizeof(float));
-	uniformBufferInfo_.buffer = uniformBuffer_;
-	uniformBufferInfo_.offset = 0;
-	uniformBufferInfo_.range = uniformAllocSize;
-
-	device.unmapMemory(uniformDevMemory_);
 
 	vk::SamplerCreateInfo samplerInfo;
 	samplerInfo.magFilter = vk::Filter::eNearest;
@@ -69,27 +73,25 @@ void BloomPipline::initResource()
 	renderPassInfo.pSubpasses = &subpassDesc;
 	renderPass_ = device.createRenderPass(renderPassInfo);
 
-	vk::DescriptorPoolSize descPoolSize[2] = {
-		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 2),
+	vk::DescriptorPoolSize descPoolSize = {
 		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 2)
 	};
 
 	vk::DescriptorPoolCreateInfo descPoolInfo;
 	descPoolInfo.maxSets = 2;
-	descPoolInfo.poolSizeCount = 2;
-	descPoolInfo.pPoolSizes = descPoolSize;
+	descPoolInfo.poolSizeCount = 1;
+	descPoolInfo.pPoolSizes = &descPoolSize;
 	descPool_ = device.createDescriptorPool(descPoolInfo);
 
-	vk::DescriptorSetLayoutBinding layoutBinding[2] = {
-		{0, vk::DescriptorType::eUniformBuffer,1,vk::ShaderStageFlagBits::eFragment},
-		{1, vk::DescriptorType::eCombinedImageSampler,1,vk::ShaderStageFlagBits::eFragment}
+	vk::DescriptorSetLayoutBinding layoutBinding{
+		0, vk::DescriptorType::eCombinedImageSampler,1,vk::ShaderStageFlagBits::eFragment
 	};
 
 	vk::DescriptorSetLayoutCreateInfo descLayoutInfo;
 	descLayoutInfo.pNext = nullptr;
 	descLayoutInfo.flags = {};
-	descLayoutInfo.bindingCount = 2;
-	descLayoutInfo.pBindings = layoutBinding;
+	descLayoutInfo.bindingCount = 1;
+	descLayoutInfo.pBindings = &layoutBinding;
 
 	descSetLayout_ = device.createDescriptorSetLayout(descLayoutInfo);
 
@@ -115,21 +117,14 @@ void BloomPipline::initResource()
 	specInfo.pMapEntries = &specMapEntry;
 	specInfo.pData = &specData;
 
-	vk::PipelineShaderStageCreateInfo piplineShaderStage[2] = { {
-			{},
-			vk::ShaderStageFlagBits::eVertex,
-			vertShader,
-			"main",
-			nullptr
-		},
-		{
-			{},
-			vk::ShaderStageFlagBits::eFragment,
-			fragShader,
-			"main",
-			&specInfo
-		}
-	};
+	vk::PipelineShaderStageCreateInfo piplineShaderStage[2];
+	piplineShaderStage[0].stage = vk::ShaderStageFlagBits::eVertex;
+	piplineShaderStage[0].module = vertShader;
+	piplineShaderStage[0].pName = "main";
+	piplineShaderStage[1].stage = vk::ShaderStageFlagBits::eFragment;
+	piplineShaderStage[1].module = fragShader;
+	piplineShaderStage[1].pName = "main";
+
 	piplineInfo.stageCount = 2;
 	piplineInfo.pStages = piplineShaderStage;
 
@@ -182,10 +177,18 @@ void BloomPipline::initResource()
 	dynamicState.pDynamicStates = dynamicEnables;
 	piplineInfo.pDynamicState = &dynamicState;
 
+	pushConstant_.offset = 0;
+	pushConstant_.stageFlags = vk::ShaderStageFlagBits::eFragment;
+	pushConstant_.size = sizeof(BlurParams);
+
 	vk::PipelineLayoutCreateInfo piplineLayoutInfo;
 	piplineLayoutInfo.setLayoutCount = 1;
 	piplineLayoutInfo.pSetLayouts = &descSetLayout_;
+	piplineLayoutInfo.pushConstantRangeCount = 1;
+	piplineLayoutInfo.pPushConstantRanges = &pushConstant_;
+
 	piplineLayout_ = device.createPipelineLayout(piplineLayoutInfo);
+
 	piplineInfo.layout = piplineLayout_;
 
 	piplineInfo.renderPass = renderPass_;
@@ -255,6 +258,7 @@ void BloomPipline::render()
 	cmdBuffer.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, hBlurPipline_);
 	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[0], 0, nullptr);
+	cmdBuffer.pushConstants<BlurParams>(piplineLayout_, pushConstant_.stageFlags, 0, blurParams_);
 	cmdBuffer.draw(4, 1, 0, 0);
 	cmdBuffer.endRenderPass();
 
@@ -272,6 +276,7 @@ void BloomPipline::render()
 	cmdBuffer.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vBlurPipline_);
 	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[1], 0, nullptr);
+	cmdBuffer.pushConstants<BlurParams>(piplineLayout_, pushConstant_.stageFlags, 0, blurParams_);
 	cmdBuffer.draw(4, 1, 0, 0);
 	cmdBuffer.endRenderPass();
 
@@ -290,8 +295,6 @@ void BloomPipline::destroy()
 {
 	vk::Device device = window_->device();
 	device.destroySampler(sampler_);
-	device.destroyBuffer(uniformBuffer_);
-	device.freeMemory(uniformDevMemory_);
 	device.destroyRenderPass(renderPass_);
 	device.destroyDescriptorPool(descPool_);
 	device.destroyDescriptorSetLayout(descSetLayout_);
@@ -402,19 +405,13 @@ void BloomPipline::resizeFrameBuffer(int width, int height)
 	queue.submit(submitInfo);
 
 	for (int i = 0; i < 2; ++i) {
-		vk::WriteDescriptorSet descWrite[2];
-		descWrite[0].dstSet = descSet_[i];
-		descWrite[0].dstBinding = 0;
-		descWrite[0].descriptorCount = 1;
-		descWrite[0].descriptorType = vk::DescriptorType::eUniformBuffer;
-		descWrite[0].pBufferInfo = &uniformBufferInfo_;
-
+		vk::WriteDescriptorSet descWrite;
 		vk::DescriptorImageInfo descImageInfo(sampler_, frameBuffer_[i].imageView, vk::ImageLayout::eShaderReadOnlyOptimal);
-		descWrite[1].dstSet = descSet_[i];
-		descWrite[1].dstBinding = 1;
-		descWrite[1].descriptorCount = 1;
-		descWrite[1].descriptorType = vk::DescriptorType::eCombinedImageSampler;
-		descWrite[1].pImageInfo = &descImageInfo;
-		device.updateDescriptorSets(2, descWrite, 0, nullptr);
+		descWrite.dstSet = descSet_[i];
+		descWrite.dstBinding = 0;
+		descWrite.descriptorCount = 1;
+		descWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+		descWrite.pImageInfo = &descImageInfo;
+		device.updateDescriptorSets(1, &descWrite, 0, nullptr);
 	}
 }

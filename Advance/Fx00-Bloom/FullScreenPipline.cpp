@@ -87,7 +87,7 @@ void FullScreenPipline::init()
 	vk::PipelineColorBlendStateCreateInfo colorBlendState;
 	colorBlendState.attachmentCount = 1;
 	vk::PipelineColorBlendAttachmentState colorBlendAttachmentState;
-	colorBlendAttachmentState.blendEnable = false;
+	colorBlendAttachmentState.blendEnable = true;
 	colorBlendAttachmentState.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
 	colorBlendAttachmentState.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
 	colorBlendAttachmentState.colorBlendOp = vk::BlendOp::eAdd;
