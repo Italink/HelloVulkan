@@ -22,20 +22,20 @@ layout(std140, binding = 1) buffer OutputParticle{
     Particle outputParticles[PARTICLE_MAX_SIZE];
 };
 
-
-#define GlobalId (gl_GlobalInvocationID.x * gl_NumWorkGroups.y * LOCAL_SIZE + gl_GlobalInvocationID.y)
-
 #define DEAD_TIME 5 
 
 void main() {
-    if( GlobalId >= inputCounter||intputParticles[GlobalId].life > DEAD_TIME) // 
+
+    const uint srcIndex = gl_GlobalInvocationID.x * gl_NumWorkGroups.y * LOCAL_SIZE + gl_GlobalInvocationID.y;
+
+    if( srcIndex >= inputCounter||intputParticles[srcIndex].life > DEAD_TIME) // 
         return;
-    int currentIndex = atomicAdd(outputCounter,1);
+    const uint dstIndex = atomicAdd(outputCounter,1);
 
-    outputParticles[currentIndex].life = intputParticles[GlobalId].life + 0.01;
+    outputParticles[dstIndex].life = intputParticles[srcIndex].life + 0.01;
 
-    outputParticles[currentIndex].position = intputParticles[GlobalId].position + intputParticles[GlobalId].velocity ;
+    outputParticles[dstIndex].position = intputParticles[srcIndex].position + intputParticles[srcIndex].velocity ;
 
-    outputParticles[currentIndex].velocity = intputParticles[GlobalId].velocity + vec3(0,0.00003,0) ;
+    outputParticles[dstIndex].velocity = intputParticles[srcIndex].velocity + vec3(0,0.00003,0) ;
 
 }
