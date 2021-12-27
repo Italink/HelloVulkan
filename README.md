@@ -4,43 +4,42 @@
 
 - 教程
   - [极客教程（译）](https://geek-docs.com/vulkan/vulkan-tutorial/vulkan-tutorial-index.html)：概念讲解，主要是Vulkan中各个数据结构的概念及使用。
-  - https://vulkan-tutorial.com/：一个比较火的Vulkan基础教程，文档和代码齐全。
-  - https://www.vulkan.org/learn：vulkan学习的整合网站，里面有很多资源和工具。
-  - https://developer.nvidia.com/transitioning-opengl-vulkan：如何从OpenGL转到Vulkan。
-- Demo：从代码上手学习绝对是最快的一种方式，但需要你对Vulkan的整体结构都有一定认识，否则你会走很多弯路，下面的网站中有很多的样例：
-  - https://github.com/Overv/VulkanTutorial：教程附带代码。
-  - https://github.com/KhronosGroup/Vulkan-Hpp：Vulkan官方提供了很多使用Vulkan HPP的样例
-  - ！！https://github.com/SaschaWillems/Vulkan：拥有非常完善的样例，涵盖了大多数Vulkan的特性和一些高级图形算法。
+  - [https://vulkan-tutorial.com](https://vulkan-tutorial.com)一个比较火的Vulkan基础教程，文档和代码齐全。
+  - [https://www.vulkan.org/learn](https://www.vulkan.org/learn)：vulkan学习的整合网站，里面有很多资源和工具。
+  - [https://developer.nvidia.com/transitioning-opengl-vulkan](https://developer.nvidia.com/transitioning-opengl-vulkan)：如何从OpenGL转到Vulkan。
+- 代码示例：从代码上手学习绝对是最快的一种方式，但需要你对Vulkan的整体结构都有一定认识，否则你会走很多弯路，下面的网站中有很多的样例：
+  - [https://github.com/Overv/VulkanTutorial](https://github.com/Overv/VulkanTutorial)：教程的附带代码。
+  - [https://github.com/KhronosGroup/Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp)：Vulkan官方提供了很多使用Vulkan HPP的样例
+  - [https://github.com/SaschaWillems/Vulkan](https://github.com/SaschaWillems/Vulkan)：拥有非常完善的样例，涵盖了大多数Vulkan的特性和一些高级图形算法。
 
 #### 推荐資料
 
-Vulkan的书籍不多，由于它只是一个API，一个用于绘图的工具，做引擎和渲染的重点，并不在这上面，所以下面给大家推荐一下我觉得比较不错的资料：
-
 - Vulkan 官方文档 
-  - https://www.khronos.org/registry/vulkan/specs/
-  - https://www.khronos.org/registry/vulkan/#apispecs
-
-- OpenGL文档里面含有很多图形学内容：https://www.opengl.org/archives/resources/code/samples/sig99/advanced99/notes/node1.html 
+  - [https://www.khronos.org/registry/vulkan/specs](https://www.khronos.org/registry/vulkan/specs/)
+  - [https://www.khronos.org/registry/vulkan/#apispecs](https://www.khronos.org/registry/vulkan/#apispecs)
 
 - 图形学：
 
+  网站：
+
+  - **实时渲染的知识整合**：[http://www.realtimerendering.com](http://www.realtimerendering.com)
+  - OpenGL官网上的一些示例：[https://www.opengl.org/archives/resources/code/samples/sig99/advanced99/notes/node1.html ](https://www.opengl.org/archives/resources/code/samples/sig99/advanced99/notes/node1.html )
+
   书籍：
 
-  - 《GPU Gems》https://developer.nvidia.com/gpugems/gpugems/foreword
+  - 《GPU Gems》[https://developer.nvidia.com/gpugems/gpugems/foreword](https://developer.nvidia.com/gpugems/gpugems/foreword)
   - 《3D数学基础》《全局光照算法》《计算机图形学》...
 
-  
+  <img src="https://i0.hdslb.com/bfs/article/266b78da71b4185f239f3508e6f5c3dc9de7aa91.png@612w_641h_progressive.webp" width="200px">
 
-  <img src="https://i0.hdslb.com/bfs/article/266b78da71b4185f239f3508e6f5c3dc9de7aa91.png@612w_641h_progressive.webp" alt="img" style="zoom: 50%;" />
-
-  教程：（Games系列）：https://www.bilibili.com/video/BV1X7411F744
+  教程：（Games系列）：[https://www.bilibili.com/video/BV1X7411F744](https://www.bilibili.com/video/BV1X7411F744)
 
 - 引擎
 
-  -   UE ：https://www.cnblogs.com/timlly/
+  -   UE ：[https://www.cnblogs.com/timlly/](https://www.cnblogs.com/timlly/)
   - 《游戏引擎架构》
-
-  <img src="https://bkimg.cdn.bcebos.com/pic/2cf5e0fe9925bc3122742eca5cdf8db1cb1370b2?x-bce-process=image/watermark,image_d2F0ZXIvYmFpa2UxMTY=,g_7,xp_5,yp_5/format,f_auto" style="zoom: 25%;" />
+  - <img src="https://bkimg.cdn.bcebos.com/pic/2cf5e0fe9925bc3122742eca5cdf8db1cb1370b2?x-bce-process=image/watermark,image_d2F0ZXIvYmFpa2UxMTY=,g_7,xp_5,yp_5/format,f_auto" width="180px">
+  
 
 
 
@@ -69,9 +68,7 @@ Vulkan的书籍不多，由于它只是一个API，一个用于绘图的工具�
 
 ### 笔者感言
 
-目前vulkan的教程整体比较少，国内大多是一些零零散散的概念和代码，国外有一些不错的教程，但也存在一些问题：一大堆的文字概念，代码封装的到处都是，Demo写的是狂拽酷炫，看完效果：”卧槽，秀。卧槽，nb“，再看代码：”我尼玛“，这也是笔者为什么想写这个教程的原因，由于笔者工作上的事情比较多，会提前写好代码，文档可能写的会比较慢，还请大家见谅。
-
-
+目前vulkan的教程整体比较少，大多是一些零零散散的概念和代码，国外有一些不错的教程，但也存在一些问题：一大堆的文字概念，代码封装的到处都是，Demo写的是狂拽酷炫，看完效果：”卧槽，秀。卧槽，nb“，再看代码：”我尼玛“，这对初学者来说是很不友好的，这也是笔者为什么想写这个教程的原因，由于笔者工作上的事情比较多，会提前写好代码，文档可能写的会比较慢，还请大家见谅。
 
 ## 开发环境
 
@@ -79,11 +76,11 @@ Vulkan的书籍不多，由于它只是一个API，一个用于绘图的工具�
 
   > 使用Vulkan必须安装[Vulkan SDK](https://vulkan.lunarg.com/)，Vulkan使用C风格的API，跟OpenGL一样恶心——使用宏来定义各种类型格式
   >
-  > 不过好在Vulkan提供了c++绑定，位于头文件`vulkan.hpp`中，使用它我们可以编写可读性更高的代码。
+  > 不过好在Vulkan提供了c++绑定，位于头文件`vulkan.hpp`中，使用它我们可以编写可读性更好的代码。
 
 - Qt 6.2.0（如果你已经有Qt5，则无需更换）
 
-  > Qt提供Vulkan的窗口支持，使用它，可以在学习初期跳过Surface，SwapChain，ComandBuffer，Device等一系列跟渲染关联不大的内容，快速上手Vulkan核心的渲染体系，从而大大降低学习难度。
+  > Qt提供Vulkan的窗口支持，使用它，可以在学习初期跳过Surface，SwapChain，ComandBuffer，Device等一系列跟渲染关联不大的内容，快速上手Vulkan核心的渲染流程，从而大大降低学习难度。
 
 - VS 2019（如果你有VS2017，无需更换）
 
@@ -91,7 +88,7 @@ Vulkan的书籍不多，由于它只是一个API，一个用于绘图的工具�
 
 - Cmake 64 位
 
-  > 很多初学的小伙伴原来可能没接触过自动化的项目构建，都是使用IDE的图形界面来管理项目工程，这在小项目中使用是没什么问题的，大项目中会存在很多子项目，各种依赖都需要定义，最重要的是项目跨平台的问题，比如mac上没有vs，开发一般使用xcode，你拿个vs的工程给xcode也不行啊，cmake是一个不错的选择（），使用它可以生成各个IDE的工程文件。在开源项目中能看到有个CMakeLists.txt，别提有多亲切了。
+  > 很多初学的小伙伴原来可能没接触过自动化的项目构建，都是使用IDE的图形界面来管理项目工程，这在小项目中使用是没什么问题的，大项目中会存在很多子项目，各种依赖都需要定义，还有就是项目跨平台的问题，比如mac上没有vs，开发一般使用xcode，你拿个vs的工程给xcode也不行啊，cmake是一个不错的选择，使用它可以生成各个IDE的工程文件。在开源项目中能看到有个CMakeLists.txt，别提有多亲切了，最重要的是使用cmake能做一些自动化的构建，比如vulkan的shader使用的是sprv格式，使用前必须使用命令行工具转换，通过cmake我们就可以直接把glsl添加到项目里，当代码发生变动时，自动调用脚本进行处理。
 
 - Git & TortoiseGit
 
@@ -123,10 +120,10 @@ Vulkan的书籍不多，由于它只是一个API，一个用于绘图的工具�
 
 配置过程中可能会出现报错，这是因为初次使用，导致CMake无法找到Qt的目录，你在红色的条目上能看到它的Value是【Not Founded】，点击该条目，右侧会出现一个按钮，点击它选择路径，按下方的路径根据你自己的QT安装路径来进行选择，选择完毕点击【Configure】，然后继续选择路径消除报错，直到没有报错产生。
 
-![](https://github.com/Italink/QtVulkan/blob/main/Doc/Src/CMake03.png)
+![](https://github.com/Italink/QtVulkan/blob/main/Doc/Src/Cmake03.png)
 
 然后再点击【Generate】，就会再构建目录下生成VS工程文件，再点击【Open Project】可打开 VS 工程 
 
 在解决方案菜单中，右键项目，在菜单栏点击【设为启动项】，可运行对应项目
 
-![](https://github.com/Italink/QtVulkan/blob/main/Doc/Src/CMake04.png)
+![](https://github.com/Italink/QtVulkan/blob/main/Doc/Src/Cmake04.png)
