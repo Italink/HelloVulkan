@@ -1,6 +1,6 @@
 # Vulkan教程
 
-#### 学习途径
+## 学习途径
 
 - 教程
   - [极客教程（译）](https://geek-docs.com/vulkan/vulkan-tutorial/vulkan-tutorial-index.html)：概念讲解，主要是Vulkan中各个数据结构的概念及使用。
@@ -12,7 +12,7 @@
   - [https://github.com/KhronosGroup/Vulkan-Hpp](https://github.com/KhronosGroup/Vulkan-Hpp)：Vulkan官方提供了很多使用Vulkan HPP的样例
   - [https://github.com/SaschaWillems/Vulkan](https://github.com/SaschaWillems/Vulkan)：拥有非常完善的样例，涵盖了大多数Vulkan的特性和一些高级图形算法。
 
-#### 推荐資料
+### 推荐資料
 
 - Vulkan 官方文档 
   - [https://www.khronos.org/registry/vulkan/specs](https://www.khronos.org/registry/vulkan/specs/)
@@ -36,14 +36,14 @@
 
 - 引擎
 
-  -   UE ：[https://www.cnblogs.com/timlly/](https://www.cnblogs.com/timlly/)
+  - UE ：[https://www.cnblogs.com/timlly/](https://www.cnblogs.com/timlly/)
+  
   - 《游戏引擎架构》
-  - <img src="https://bkimg.cdn.bcebos.com/pic/2cf5e0fe9925bc3122742eca5cdf8db1cb1370b2?x-bce-process=image/watermark,image_d2F0ZXIvYmFpa2UxMTY=,g_7,xp_5,yp_5/format,f_auto" width="180px">
+  
+    <img src="https://bkimg.cdn.bcebos.com/pic/2cf5e0fe9925bc3122742eca5cdf8db1cb1370b2?x-bce-process=image/watermark,image_d2F0ZXIvYmFpa2UxMTY=,g_7,xp_5,yp_5/format,f_auto" width="180px">
   
 
-
-
-#### [Vulkan与OpenGL的区别](https://geek-docs.com/vulkan/vulkan-tutorial/vulkan-and-opengl.html)
+## [Vulkan与OpenGL的区别](https://geek-docs.com/vulkan/vulkan-tutorial/vulkan-and-opengl.html)
 
 我的使用体验：
 
@@ -52,7 +52,7 @@
 - 刺激：OpenGL出现内存泄漏，顶多说把进程搞崩溃，Vulkan中你就等着重启吧。
 - 巴适：开启了验证层的Vulkan拥有报错提示，可以明确指出问题在哪。
 
-#### 为什么要学Vulkan
+### 为什么要学Vulkan
 
 - 相较于OpenGL，Vulkan允许你掌控更多的细节，这意味着：
   - 更多的优化空间：能针对特定的应用场景优化渲染。
@@ -127,3 +127,8 @@
 在解决方案菜单中，右键项目，在菜单栏点击【设为启动项】，可运行对应项目
 
 ![](https://github.com/Italink/QtVulkan/blob/main/Doc/Src/Cmake04.png)
+
+## 项目结构说明
+
+- QuickStart ：Vulkan的入门样例
+- Advance：Vulkan的进阶样例
