@@ -1,19 +1,18 @@
 #include "VulkanWindow.h"
 #include <QFile>
-#include <QTime>
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 static float vertexData[] = { // Y up, front = CCW
-	 0.0f,  -0.5f,   1.0f, 0.0f, 0.0f,
-	-0.5f,   0.5f,   0.0f, 1.0f, 0.0f,
-	 0.5f,   0.5f,   0.0f, 0.0f, 1.0f
+	 0.0f,   0.5f,   1.0f, 0.0f, 0.0f,
+	-0.5f,  -0.5f,   0.0f, 1.0f, 0.0f,
+	 0.5f,  -0.5f,   0.0f, 0.0f, 1.0f
 };
 
 TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
 	:window_(window)
 {
-	QList<int> sampleCounts = window->supportedSampleCounts();
+	QList<int> sampleCounts= window->supportedSampleCounts();
 	if (!sampleCounts.isEmpty()) {
 		window->setSampleCount(sampleCounts.back());
 	}
@@ -36,6 +35,7 @@ void TriangleRenderer::initResources()
 	uint8_t* vertexBufferMemPtr = (uint8_t*)device.mapMemory(vertexDevMemory_, 0, vertexMemReq.size);
 	memcpy(vertexBufferMemPtr, vertexData, sizeof(vertexData));
 	device.unmapMemory(vertexDevMemory_);
+
 
 	vk::DescriptorPoolSize descPoolSize(vk::DescriptorType::eUniformBuffer, (uint32_t)concurrentFrameCount);
 	vk::DescriptorPoolCreateInfo descPoolInfo;
@@ -136,15 +136,9 @@ void TriangleRenderer::initResources()
 	dynamicState.pDynamicStates = dynamicEnables;
 	piplineInfo.pDynamicState = &dynamicState;
 
-	pushConstant_.size = sizeof(float);
-	pushConstant_.stageFlags = vk::ShaderStageFlagBits::eFragment;
-
 	vk::PipelineLayoutCreateInfo piplineLayoutInfo;
 	piplineLayoutInfo.setLayoutCount = 1;
 	piplineLayoutInfo.pSetLayouts = &descSetLayout_;
-	piplineLayoutInfo.pushConstantRangeCount = 1;
-	piplineLayoutInfo.pPushConstantRanges = &pushConstant_;
-
 	piplineLayout_ = device.createPipelineLayout(piplineLayoutInfo);
 	piplineInfo.layout = piplineLayout_;
 
@@ -159,13 +153,15 @@ void TriangleRenderer::initResources()
 
 void TriangleRenderer::initSwapChainResources()
 {
+
 }
 
 void TriangleRenderer::releaseSwapChainResources()
 {
+
 }
 
-void TriangleRenderer::releaseResources() {
+void TriangleRenderer::releaseResources(){
 	vk::Device device = window_->device();
 	device.destroyPipeline(pipline_);
 	device.destroyPipelineCache(piplineCache_);
@@ -176,7 +172,7 @@ void TriangleRenderer::releaseResources() {
 	device.freeMemory(vertexDevMemory_);
 }
 
-void TriangleRenderer::startNextFrame() {
+void TriangleRenderer::startNextFrame(){
 	vk::Device device = window_->device();
 	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
 	const QSize size = window_->swapChainImageSize();
@@ -199,9 +195,9 @@ void TriangleRenderer::startNextFrame() {
 
 	vk::Viewport viewport;
 	viewport.x = 0;
-	viewport.y = 0;
+	viewport.y = size.height();
 	viewport.width = size.width();
-	viewport.height = size.height();
+	viewport.height = -size.height();
 
 	viewport.minDepth = 0;
 	viewport.maxDepth = 1;
@@ -218,8 +214,6 @@ void TriangleRenderer::startNextFrame() {
 	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_[window_->currentFrame()], 0, nullptr);
 
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
-
-	cmdBuffer.pushConstants<float>(piplineLayout_, pushConstant_.stageFlags, 0, { QTime::currentTime().msecsSinceStartOfDay() / 100.0f });
 
 	cmdBuffer.draw(3, 1, 0, 0);
 

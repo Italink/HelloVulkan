@@ -31,20 +31,22 @@ else()
     message(FATAL_ERROR, "Vulkan-Hpp: unhandled platform for samples!")
 endif()
 
-set(QUICK_START_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/QuickStart)
-file(GLOB QUICK_START_EXAMPLE_LIST RELATIVE ${QUICK_START_ROOT_DIR} ${QUICK_START_ROOT_DIR}/*)
-foreach(QUICK_START_EXAMPLE_NAME ${QUICK_START_EXAMPLE_LIST})
-    if(IS_DIRECTORY ${QUICK_START_ROOT_DIR}/${QUICK_START_EXAMPLE_NAME})
-        add_subdirectory(${QUICK_START_ROOT_DIR}/${QUICK_START_EXAMPLE_NAME})
-        set_target_properties(${QUICK_START_EXAMPLE_NAME} PROPERTIES FOLDER "QuickStart")
-    endif()
-endforeach()
+function(add_example SUB_DIR)
+    get_filename_component(ProjectId ${SUB_DIR} NAME)
+    file(GLOB PROJECT_SOURCE FILES ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.h  ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.cpp)
 
-set(ADVANCE_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/Advance)
-file(GLOB ADVANCE_EXAMPLE_LIST RELATIVE ${ADVANCE_ROOT_DIR} ${ADVANCE_ROOT_DIR}/*)
-foreach(ADVANCE_EXAMPLE_NAME ${ADVANCE_EXAMPLE_LIST})
-    if(IS_DIRECTORY ${ADVANCE_ROOT_DIR}/${ADVANCE_EXAMPLE_NAME})
-        add_subdirectory(${ADVANCE_ROOT_DIR}/${ADVANCE_EXAMPLE_NAME})
-        set_target_properties(${ADVANCE_EXAMPLE_NAME} PROPERTIES FOLDER "Advance")
-    endif()
-endforeach()
+    file(GLOB SHADER_SOURCE FILES   ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.vert  ${SUB_DIR}/*.frag   ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.comp)
+    foreach(SHADER ${SHADER_SOURCE})
+        target_glsl_to_spriv(${ProjectId} ${SHADER})
+    endforeach()
+    source_group("GLSL Files" FILES ${SHADER_SOURCE})
+
+    add_executable(${ProjectId} 
+        ${PROJECT_SOURCE}
+        ${SHADER_SOURCE}
+    )
+    target_link_libraries(${ProjectId} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+endfunction()
+
+add_subdirectory(01-QuickStart)
+add_subdirectory(02-Advance)
