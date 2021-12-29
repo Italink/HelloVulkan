@@ -6,6 +6,3 @@ foreach(QUICK_START_EXAMPLE_NAME ${QUICK_START_EXAMPLE_LIST})
         set_target_properties(${QUICK_START_EXAMPLE_NAME} PROPERTIES FOLDER "QuickStart")
     endif()
 endforeach()
-
-
-

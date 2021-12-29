@@ -1,16 +1,25 @@
 #include <QGuiApplication>
-#include <QVulkanInstance>
-#include "VulkanWindow.h"
 #include <QLoggingCategory>
+#include <QVulkanInstance>
+#include <vulkan/vulkan.hpp>
+#include "BufferComputer.h"
+
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+
 Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
 
-int main(int argc, char* argv[])
-{
+class VulkanWindow : public QVulkanWindow {
+public:
+	QVulkanWindowRenderer* createRenderer() override { return new BufferComputer(this); }
+};
+
+int main(int argc, char* argv[]) {
 	QGuiApplication app(argc, argv);
 
 	static vk::DynamicLoader  dynamicLoader;
 	PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dynamicLoader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+
 	QVulkanInstance instance;
 	instance.setLayers({ "VK_LAYER_KHRONOS_validation" });
 	if (!instance.create())
@@ -24,4 +33,3 @@ int main(int argc, char* argv[])
 	vkWindow.show();
 	return app.exec();
 }
-

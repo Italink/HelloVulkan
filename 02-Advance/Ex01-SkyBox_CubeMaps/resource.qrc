@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/image">
+        <file>skybox/back.jpg</file>
+        <file>skybox/bottom.jpg</file>
+        <file>skybox/front.jpg</file>
+        <file>skybox/left.jpg</file>
+        <file>skybox/right.jpg</file>
+        <file>skybox/top.jpg</file>
+    </qresource>
+</RCC>

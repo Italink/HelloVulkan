@@ -1,12 +1,19 @@
 #include <QGuiApplication>
-#include <QVulkanInstance>
-#include "VulkanWindow.h"
 #include <QLoggingCategory>
+#include "QuadRenderer.h"
+#include <QVulkanInstance>
+#include <vulkan/vulkan.hpp>
+
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
 
-int main(int argc, char* argv[])
-{
+class VulkanWindow : public QVulkanWindow {
+public:
+	QVulkanWindowRenderer* createRenderer() override { return new QuadRenderer(this); }
+};
+
+int main(int argc, char* argv[]) {
 	QGuiApplication app(argc, argv);
 
 	static vk::DynamicLoader  dynamicLoader;
@@ -26,4 +33,3 @@ int main(int argc, char* argv[])
 	vkWindow.show();
 	return app.exec();
 }
-
