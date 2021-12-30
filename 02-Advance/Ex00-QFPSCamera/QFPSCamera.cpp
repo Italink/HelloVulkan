@@ -33,6 +33,8 @@ bool QFPSCamera::eventFilter(QObject* watched, QEvent* event) {
 			window_->requestActivate();
 			projection_.setToIdentity();
 			projection_.perspective(fov, window_->width() / (float)window_->height(), nearPlane, farPlane);
+			window_->setCursor(Qt::BlankCursor);             //隐藏鼠标光标
+			QCursor::setPos(window_->geometry().center());   //将鼠标移动窗口中央
 			break;
 		}
 		case QEvent::Resize: {

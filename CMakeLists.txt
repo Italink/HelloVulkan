@@ -65,3 +65,4 @@ endfunction()
 
 add_subdirectory(01-QuickStart)
 add_subdirectory(02-Advance)
+add_subdirectory(3rdParty)

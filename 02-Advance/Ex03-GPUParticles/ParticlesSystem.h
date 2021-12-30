@@ -3,6 +3,7 @@
 
 #include "QVulkanWindow"
 #include "vulkan/vulkan.hpp"
+#include "QFPSCamera.h"
 
 class ParticlesRenderer;
 
@@ -33,6 +34,8 @@ private:
 	vk::PushConstantRange pushConstant_;
 
 	int currentNumOfParticles = 0;
+
+	QFPSCamera camera;
 };
 
 #endif // ParticlesSystem_h__

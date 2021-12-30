@@ -1,52 +1,39 @@
-#include "TriangleRenderer.h"
+#include "StaticMeshRenderer.h"
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include "mesh_vert.inl"
+#include "mesh_frag.inl"
 
-#include "triangle_vert.inl"
-#include "triangle_frag.inl"
-
-static float vertexData[] = { // Y up, front = CCW
-	 0.0f,   -0.5f,   1.0f, 0.0f, 0.0f,
-	-0.5f,    0.5f,   0.0f, 1.0f, 0.0f,
-	 0.5f,    0.5f,   0.0f, 0.0f, 1.0f
-};
-
-TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
-	:window_(window)
+StaticMeshRenderer::StaticMeshRenderer(QVulkanWindow* window) : window_(window)
 {
-	QList<int> sampleCounts = window->supportedSampleCounts();
-	if (!sampleCounts.isEmpty()) {
-		window->setSampleCount(sampleCounts.back());
-	}
-	camera.setup(window);
+	camera_.setup(window);
 }
 
-void TriangleRenderer::initResources() {
-	vk::Device device = window_->device();
-	const int concurrentFrameCount = window_->concurrentFrameCount();
-	vk::PhysicalDeviceLimits limits = window_->physicalDeviceProperties()->limits;
+void StaticMeshRenderer::loadFile(std::string file_path) {
+	const aiScene* scene = importer_.ReadFile(file_path, aiProcess_Triangulate);
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		printf("ERROR::ASSIMP:: %s", importer_.GetErrorString());
+		return;
+	}
+	processNode(scene->mRootNode, scene, aiMatrix4x4());
+}
 
-	vk::BufferCreateInfo vertexBufferInfo;
-	vertexBufferInfo.usage = vk::BufferUsageFlagBits::eVertexBuffer;
-	vertexBufferInfo.size = sizeof(vertexData);
-	vertexBuffer_ = device.createBuffer(vertexBufferInfo);
-	vk::MemoryRequirements vertexMemReq = device.getBufferMemoryRequirements(vertexBuffer_);
-	vk::MemoryAllocateInfo vertexMemAllocInfo(vertexMemReq.size, window_->hostVisibleMemoryIndex());
-	vertexDevMemory_ = device.allocateMemory(vertexMemAllocInfo);
-	device.bindBufferMemory(vertexBuffer_, vertexDevMemory_, 0);
-	uint8_t* vertexBufferMemPtr = (uint8_t*)device.mapMemory(vertexDevMemory_, 0, vertexMemReq.size);
-	memcpy(vertexBufferMemPtr, vertexData, sizeof(vertexData));
-	device.unmapMemory(vertexDevMemory_);
+void StaticMeshRenderer::initResources()
+{
+	device = window_->device();
+	loadFile("F:/QtVulkan/02-Advance/Ex05-Assimp/Genji/Genji.FBX");
+
+	vk::ShaderModuleCreateInfo shaderInfo;
+	shaderInfo.codeSize = sizeof(mesh_vert);
+	shaderInfo.pCode = mesh_vert;
+	vk::ShaderModule vertShader = device.createShaderModule(shaderInfo);
+
+	shaderInfo.codeSize = sizeof(mesh_frag);
+	shaderInfo.pCode = mesh_frag;
+	vk::ShaderModule fragShader = device.createShaderModule(shaderInfo);
 
 	vk::GraphicsPipelineCreateInfo piplineInfo;
 	piplineInfo.stageCount = 2;
-
-	vk::ShaderModuleCreateInfo shaderInfo;
-	shaderInfo.codeSize = sizeof(triangle_vert);
-	shaderInfo.pCode = triangle_vert;
-	vk::ShaderModule vertShader = device.createShaderModule(shaderInfo);
-
-	shaderInfo.codeSize = sizeof(triangle_frag);
-	shaderInfo.pCode = triangle_frag;
-	vk::ShaderModule fragShader = device.createShaderModule(shaderInfo);
 
 	vk::PipelineShaderStageCreateInfo piplineShaderStage[2];
 	piplineShaderStage[0].stage = vk::ShaderStageFlagBits::eVertex;
@@ -56,23 +43,22 @@ void TriangleRenderer::initResources() {
 	piplineShaderStage[1].module = fragShader;
 	piplineShaderStage[1].pName = "main";
 	piplineInfo.pStages = piplineShaderStage;
+	piplineInfo.pStages = piplineShaderStage;
 
 	vk::VertexInputBindingDescription vertexBindingDesc;
 	vertexBindingDesc.binding = 0;
-	vertexBindingDesc.stride = 5 * sizeof(float);
+	vertexBindingDesc.stride = sizeof(MeshNode::Vertex);
 	vertexBindingDesc.inputRate = vk::VertexInputRate::eVertex;
 
-	vk::VertexInputAttributeDescription vertexAttrDesc[2];
-	vertexAttrDesc[0].binding = 0;
-	vertexAttrDesc[0].location = 0;
-	vertexAttrDesc[0].format = vk::Format::eR32G32Sfloat;
-	vertexAttrDesc[0].offset = 0;
-	vertexAttrDesc[1].binding = 0;
-	vertexAttrDesc[1].location = 1;
-	vertexAttrDesc[1].format = vk::Format::eR32G32B32Sfloat;
-	vertexAttrDesc[1].offset = 2 * sizeof(float);
+	vk::VertexInputAttributeDescription vertexAttrDesc[5] = {
+		{0,0,vk::Format::eR32G32B32Sfloat,offsetof(MeshNode::Vertex,position)},
+		{1,0,vk::Format::eR32G32B32Sfloat,offsetof(MeshNode::Vertex,normal)},
+		{2,0,vk::Format::eR32G32B32Sfloat,offsetof(MeshNode::Vertex,tangent)},
+		{3,0,vk::Format::eR32G32B32Sfloat,offsetof(MeshNode::Vertex,bitangent)},
+		{4,0,vk::Format::eR32G32Sfloat,offsetof(MeshNode::Vertex,texCoords)},
+	};
 
-	vk::PipelineVertexInputStateCreateInfo vertexInputState({}, 1, &vertexBindingDesc, 2, vertexAttrDesc);
+	vk::PipelineVertexInputStateCreateInfo vertexInputState({}, 1, &vertexBindingDesc, 5, vertexAttrDesc);
 	piplineInfo.pVertexInputState = &vertexInputState;
 
 	vk::PipelineInputAssemblyStateCreateInfo vertexAssemblyState({}, vk::PrimitiveTopology::eTriangleList);
@@ -133,30 +119,25 @@ void TriangleRenderer::initResources() {
 	device.destroyShaderModule(fragShader);
 }
 
-void TriangleRenderer::initSwapChainResources()
+void StaticMeshRenderer::initSwapChainResources()
 {
 }
 
-void TriangleRenderer::releaseSwapChainResources()
+void StaticMeshRenderer::releaseSwapChainResources()
 {
 }
 
-void TriangleRenderer::releaseResources() {
-	vk::Device device = window_->device();
-	device.destroyPipeline(pipline_);
-	device.destroyPipelineCache(piplineCache_);
-	device.destroyPipelineLayout(piplineLayout_);
-	device.destroyBuffer(vertexBuffer_);
-	device.freeMemory(vertexDevMemory_);
+void StaticMeshRenderer::releaseResources()
+{
 }
 
-void TriangleRenderer::startNextFrame() {
-	vk::Device device = window_->device();
+void StaticMeshRenderer::startNextFrame()
+{
 	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
 	const QSize size = window_->swapChainImageSize();
 
 	vk::ClearValue clearValues[3] = {
-		vk::ClearColorValue(std::array<float,4>{1.0f,0.0f,0.0f,1.0f }),
+		vk::ClearColorValue(std::array<float,4>{0.0f,0.0f,0.0f,1.0f }),
 		vk::ClearDepthStencilValue(1.0f,0),
 		vk::ClearColorValue(std::array<float,4>{ 0.0f,0.5f,0.9f,1.0f }),
 	};
@@ -190,15 +171,28 @@ void TriangleRenderer::startNextFrame() {
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
 
 	QMatrix4x4 mvp;
-	mvp *= camera.getMatrix();
+	mvp *= camera_.getMatrix();
 	cmdBuffer.pushConstants(piplineLayout_, vk::ShaderStageFlagBits::eVertex, 0, sizeof(float) * 16, mvp.constData());
 
-	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
-
-	cmdBuffer.draw(3, 1, 0, 0);
+	for (auto& mesh : meshes_) {
+		cmdBuffer.bindVertexBuffers(0, mesh->vertexBufferInfo_.buffer, mesh->vertexBufferInfo_.offset);
+		cmdBuffer.bindIndexBuffer(mesh->indexBufferInfo_.buffer, mesh->indexBufferInfo_.offset, vk::IndexType::eUint32);
+		cmdBuffer.drawIndexed(mesh->indexBufferInfo_.range / (sizeof(unsigned int)), 1, 0, 0, 0);
+	}
 
 	cmdBuffer.endRenderPass();
 
 	window_->frameReady();
 	window_->requestUpdate();
+}
+
+void StaticMeshRenderer::processNode(const aiNode* node, const aiScene* scene, aiMatrix4x4 mat)
+{
+	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		meshes_.push_back(std::make_shared<MeshNode>(window_->device(), this, mesh, scene, window_->hostVisibleMemoryIndex(), mat));
+	}
+	for (unsigned int i = 0; i < node->mNumChildren; i++) {
+		processNode(node->mChildren[i], scene, mat * node->mChildren[i]->mTransformation);
+	}
 }

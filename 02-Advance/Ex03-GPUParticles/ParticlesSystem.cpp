@@ -29,6 +29,7 @@ static inline vk::DeviceSize aligned(vk::DeviceSize v, vk::DeviceSize byteAlign)
 
 ParticleSystem::ParticleSystem(ParticlesRenderer* window) : renderer_(window)
 {
+	camera.setup(renderer_->window_);
 }
 
 void ParticleSystem::initResource()
@@ -322,9 +323,7 @@ void ParticleSystem::render()
 	cmdBuffer.bindVertexBuffers(0, buffer_, { descBufInfo_[0].offset });
 
 	QMatrix4x4 view;
-	view.perspective(90, size.width() / (double)size.height(), 0.01, 1000);
-	view.lookAt(QVector3D(0, 1, 2), QVector3D(0, 0, 0), QVector3D(0, 1, 0));
-	view.rotate(QTime::currentTime().msecsSinceStartOfDay() / 100.0, 1, 0, 0);
+	view *= camera.getMatrix();
 	cmdBuffer.pushConstants<QMatrix4x4>(renderPiplineLayout_, pushConstant_.stageFlags, 0, view);
 
 	cmdBuffer.draw(currentNumOfParticles, 1, 0, 0);

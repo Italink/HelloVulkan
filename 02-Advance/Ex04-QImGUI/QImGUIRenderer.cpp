@@ -357,8 +357,8 @@ void QImGUIRenderer::startNextFrame() {
 	io.DisplayFramebufferScale = ImVec2(window_->devicePixelRatio(), window_->devicePixelRatio());
 
 	double current_time = QDateTime::currentMSecsSinceEpoch() / double(1000);
-	io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f / 60.0f);
-	g_Time = current_time;
+	io.DeltaTime = time_ > 0.0 ? (float)(current_time - time_) : (float)(1.0f / 60.0f);
+	time_ = current_time;
 	if (io.WantSetMousePos) {
 		const QPoint global_pos = window_->mapToGlobal(QPoint{ (int)io.MousePos.x, (int)io.MousePos.y });
 		QCursor cursor = window_->cursor();
@@ -373,12 +373,12 @@ void QImGUIRenderer::startNextFrame() {
 		io.MousePos = ImVec2(-1, -1);
 	}
 	for (int i = 0; i < 3; i++) {
-		io.MouseDown[i] = g_MousePressed[i];
+		io.MouseDown[i] = mousePressed_[i];
 	}
-	io.MouseWheelH = g_MouseWheelH;
-	io.MouseWheel = g_MouseWheel;
-	g_MouseWheelH = 0;
-	g_MouseWheel = 0;
+	io.MouseWheelH = mouseWheelH_;
+	io.MouseWheel = mouseWheel_;
+	mouseWheelH_ = 0;
+	mouseWheel_ = 0;
 	if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
 		return;
 
@@ -464,8 +464,7 @@ void QImGUIRenderer::submitImGui()
 		vertexBufferOffset += cmd_list->VtxBuffer.size_in_bytes();
 		indexBufferOffset += cmd_list->IdxBuffer.size_in_bytes();
 
-		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
-		{
+		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++) {
 			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 			if (pcmd->UserCallback) {
 				pcmd->UserCallback(cmd_list, pcmd);
@@ -512,25 +511,25 @@ bool QImGUIRenderer::eventFilter(QObject* watched, QEvent* event)
 		case QEvent::MouseButtonPress:
 		case QEvent::MouseButtonRelease: {
 			QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-			g_MousePressed[0] = mouseEvent->buttons() & Qt::LeftButton;
-			g_MousePressed[1] = mouseEvent->buttons() & Qt::RightButton;
-			g_MousePressed[2] = mouseEvent->buttons() & Qt::MiddleButton;
+			mousePressed_[0] = mouseEvent->buttons() & Qt::LeftButton;
+			mousePressed_[1] = mouseEvent->buttons() & Qt::RightButton;
+			mousePressed_[2] = mouseEvent->buttons() & Qt::MiddleButton;
 			break;
 		}
 		case QEvent::Wheel: {
 			QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
 			ImGui::SetCurrentContext(imGuiContext);
 			if (wheelEvent->pixelDelta().x() != 0) {
-				g_MouseWheelH += wheelEvent->pixelDelta().x() / (ImGui::GetTextLineHeight());
+				mouseWheelH_ += wheelEvent->pixelDelta().x() / (ImGui::GetTextLineHeight());
 			}
 			else {
-				g_MouseWheelH += wheelEvent->angleDelta().x() / 120;
+				mouseWheelH_ += wheelEvent->angleDelta().x() / 120;
 			}
 			if (wheelEvent->pixelDelta().y() != 0) {
-				g_MouseWheel += wheelEvent->pixelDelta().y() / (5.0 * ImGui::GetTextLineHeight());
+				mouseWheel_ += wheelEvent->pixelDelta().y() / (5.0 * ImGui::GetTextLineHeight());
 			}
 			else {
-				g_MouseWheel += wheelEvent->angleDelta().y() / 120;
+				mouseWheel_ += wheelEvent->angleDelta().y() / 120;
 			}
 			break;
 		}

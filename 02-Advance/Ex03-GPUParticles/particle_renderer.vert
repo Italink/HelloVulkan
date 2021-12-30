@@ -6,7 +6,6 @@ layout(push_constant) uniform PushConstant{
     mat4 view;
 }pushConstant;
 
-
 out gl_PerVertex { 
     vec4 gl_Position;
     float gl_PointSize;

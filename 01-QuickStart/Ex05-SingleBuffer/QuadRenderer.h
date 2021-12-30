@@ -13,8 +13,6 @@ public:
 	void releaseResources() override;
 	void startNextFrame() override;
 private:
-	vk::ShaderModule loadShader(const QString& name);
-private:
 	QVulkanWindow* window_ = nullptr;
 
 	vk::Buffer singleBuffer_;

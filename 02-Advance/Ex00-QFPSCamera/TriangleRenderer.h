@@ -3,7 +3,7 @@
 
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
-#include <QFPSCamera.h>
+#include "QFPSCamera.h"
 
 class TriangleRenderer : public QVulkanWindowRenderer {
 public:

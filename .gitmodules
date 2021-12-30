@@ -1,0 +1,9 @@
+[submodule "3rdParty/imgui"]
+	path = 3rdParty/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "3rdParty/implot"]
+	path = 3rdParty/implot
+	url = https://github.com/epezent/implot.git
+[submodule "3rdParty/assimp"]
+	path = 3rdParty/assimp
+	url = https://github.com/assimp/assimp.git

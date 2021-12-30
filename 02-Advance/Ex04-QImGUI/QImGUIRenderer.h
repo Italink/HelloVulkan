@@ -25,10 +25,10 @@ protected:
 private:
 	ImGuiContext* imGuiContext = nullptr;
 	ImPlotContext* imPlotContext = nullptr;
-	double       g_Time = 0.0f;
-	bool         g_MousePressed[3] = { false, false, false };
-	float        g_MouseWheel = 0;
-	float        g_MouseWheelH = 0;
+	double       time_ = 0.0f;
+	bool         mousePressed_[3] = { false, false, false };
+	float        mouseWheel_ = 0;
+	float        mouseWheelH_ = 0;
 
 	vk::Buffer vertexBuffer_;
 	vk::DeviceMemory vertexDevMemory_;

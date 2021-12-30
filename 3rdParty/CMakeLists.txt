@@ -46,18 +46,10 @@ endmacro()
 
 add_subdirectory(assimp)
 
-add_library(QFPSCamera
-    STATIC
-    QFPSCamera/QFPSCamera.cpp
-    QFPSCamera/QFPSCamera.h
-)
-target_link_libraries(QFPSCamera PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-target_include_directories(QFPSCamera PUBLIC ${CMAKE_CURRENT_LIST_DIR}/QFPSCamera)
-
 get_all_targets(TARGET_LIST)
 
 foreach(TARGET_ITEM ${TARGET_LIST})
-    set_target_properties(${TARGET_ITEM} PROPERTIES FOLDER "Advance/Component")
+    set_target_properties(${TARGET_ITEM} PROPERTIES FOLDER "3rdParty")
 endforeach()
 
 
