@@ -10,7 +10,7 @@ class StaticMeshRenderer;
 class MeshNode {
 public:
 	MeshNode(vk::Device device, StaticMeshRenderer* model, const aiMesh* mesh, const aiScene* scene, int memoryTypeIndex, aiMatrix4x4 matrix);
-
+	~MeshNode();
 	struct Texture {
 		std::string path;
 		aiTextureType type;

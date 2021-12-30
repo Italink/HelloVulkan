@@ -33,5 +33,6 @@ int main(int argc, char* argv[]) {
 	vkWindow.setVulkanInstance(&instance);
 	vkWindow.resize(1024, 768);
 	vkWindow.show();
+
 	return app.exec();
 }

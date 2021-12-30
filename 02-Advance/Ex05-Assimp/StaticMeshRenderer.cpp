@@ -20,9 +20,8 @@ void StaticMeshRenderer::loadFile(std::string file_path) {
 
 void StaticMeshRenderer::initResources()
 {
-	device = window_->device();
 	loadFile("F:/QtVulkan/02-Advance/Ex05-Assimp/Genji/Genji.FBX");
-
+	device = window_->device();
 	vk::ShaderModuleCreateInfo shaderInfo;
 	shaderInfo.codeSize = sizeof(mesh_vert);
 	shaderInfo.pCode = mesh_vert;
@@ -129,6 +128,10 @@ void StaticMeshRenderer::releaseSwapChainResources()
 
 void StaticMeshRenderer::releaseResources()
 {
+	device.destroyPipeline(pipline_);
+	device.destroyPipelineLayout(piplineLayout_);
+	device.destroyPipelineCache(piplineCache_);
+	meshes_.clear();
 }
 
 void StaticMeshRenderer::startNextFrame()
@@ -170,11 +173,16 @@ void StaticMeshRenderer::startNextFrame()
 
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
 
-	QMatrix4x4 mvp;
-	mvp *= camera_.getMatrix();
-	cmdBuffer.pushConstants(piplineLayout_, vk::ShaderStageFlagBits::eVertex, 0, sizeof(float) * 16, mvp.constData());
-
 	for (auto& mesh : meshes_) {
+		QMatrix4x4 localMatrix;
+		memcpy(localMatrix.data(), &mesh->localMatrix_, sizeof(aiMatrix4x4));
+
+		QMatrix4x4 flipY;
+		flipY.scale(1, -1, 1);
+
+		QMatrix4x4 mvp = camera_.getMatrix() * flipY * localMatrix.transposed();
+
+		cmdBuffer.pushConstants(piplineLayout_, vk::ShaderStageFlagBits::eVertex, 0, sizeof(float) * 16, mvp.constData());
 		cmdBuffer.bindVertexBuffers(0, mesh->vertexBufferInfo_.buffer, mesh->vertexBufferInfo_.offset);
 		cmdBuffer.bindIndexBuffer(mesh->indexBufferInfo_.buffer, mesh->indexBufferInfo_.offset, vk::IndexType::eUint32);
 		cmdBuffer.drawIndexed(mesh->indexBufferInfo_.range / (sizeof(unsigned int)), 1, 0, 0, 0);

@@ -57,3 +57,9 @@ MeshNode::MeshNode(vk::Device device, StaticMeshRenderer* model, const aiMesh* m
 	memcpy(bufferMemPtr + indexBufferInfo_.offset, indices.data(), indexBufferInfo_.range);
 	device.unmapMemory(bufferMemory_);
 }
+
+MeshNode::~MeshNode()
+{
+	device_.destroyBuffer(buffer_);
+	device_.freeMemory(bufferMemory_);
+}

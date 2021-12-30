@@ -189,8 +189,7 @@ void TriangleRenderer::startNextFrame() {
 
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
 
-	QMatrix4x4 mvp;
-	mvp *= camera.getMatrix();
+	QMatrix4x4 mvp = camera.getMatrix();
 	cmdBuffer.pushConstants(piplineLayout_, vk::ShaderStageFlagBits::eVertex, 0, sizeof(float) * 16, mvp.constData());
 
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
