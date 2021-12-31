@@ -1,5 +1,5 @@
-#ifndef QFPSCamera_h__
-#define QFPSCamera_h__
+#ifndef QFpsCamera_h__
+#define QFpsCamera_h__
 
 #include <QObject>
 #include <QVector3D>
@@ -8,9 +8,9 @@
 
 class QVulkanWindow;
 
-class QFPSCamera :public QObject {
+class QFpsCamera :public QObject {
 public:
-	~QFPSCamera();
+	~QFpsCamera();
 	void setup(QVulkanWindow* window);
 	QMatrix4x4 getMatrix() const;
 	float getMoveSpeed() const { return moveSpeed_; }
@@ -22,7 +22,7 @@ private:
 private:
 	float yaw_ = -M_PI_2;									    //偏航角
 	float pitch_ = .0f;											//俯视角
-	float rotationSensitivity_ = 0.0005f;							    //鼠标灵敏度
+	float rotationSensitivity_ = 0.0005f;						//鼠标灵敏度
 	float moveSpeed_ = 0.005f;									//控制移动速度
 	QVector3D cameraPos_ = QVector3D(0.0f, 0.0f, 1.35f);        //摄像机初始位置
 	QVector3D cameraDirection_ = QVector3D(cos(yaw_) * cos(pitch_), sin(pitch_), sin(yaw_) * cos(pitch_));  //摄像机方向
@@ -37,7 +37,7 @@ private:
 	float nearPlane = 0.001f;
 	float farPlane = 10000.0f;
 	QMatrix4x4 projection_;		 //投影矩阵
-	QVulkanWindow* window_;
+	QVulkanWindow* window_ = nullptr;
 };
 
-#endif // QFPSCamera_h__
+#endif // QFpsCamera_h__

@@ -3,7 +3,7 @@
 
 #include "QVulkanWindow"
 #include "vulkan/vulkan.hpp"
-#include "QFPSCamera.h"
+#include "QFpsCamera.h"
 
 class ParticlesRenderer;
 
@@ -35,7 +35,7 @@ private:
 
 	int currentNumOfParticles = 0;
 
-	QFPSCamera camera;
+	QFpsCamera camera;
 };
 
 #endif // ParticlesSystem_h__

@@ -3,7 +3,7 @@
 
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
-#include "QFPSCamera.h"
+#include "QFpsCamera.h"
 
 class SkyBoxRenderer : public QVulkanWindowRenderer {
 public:
@@ -32,7 +32,7 @@ private:
 	vk::DeviceMemory imageDevMemory_;
 	vk::ImageView imageView_;
 
-	QFPSCamera fpsCamera_;
+	QFpsCamera fpsCamera_;
 };
 
 #endif

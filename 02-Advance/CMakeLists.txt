@@ -9,21 +9,26 @@ foreach(ADVANCE_EXAMPLE_NAME ${ADVANCE_EXAMPLE_LIST})
     endif()
 endforeach()
 
-add_library(QFPSCamera
+add_library(QFpsCamera
     STATIC
-    Ex00-QFPSCamera/QFPSCamera.cpp
-    Ex00-QFPSCamera/QFPSCamera.h
+    Ex00-QFpsCamera/QFpsCamera.cpp
+    Ex00-QFpsCamera/QFpsCamera.h
 )
-target_link_libraries(QFPSCamera PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-target_include_directories(QFPSCamera PUBLIC ${CMAKE_CURRENT_LIST_DIR}/Ex00-QFPSCamera)
-set_target_properties(QFPSCamera PROPERTIES FOLDER "Advance/Component")
+target_link_libraries(QFpsCamera PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_include_directories(QFpsCamera PUBLIC ${CMAKE_CURRENT_LIST_DIR}/Ex00-QFpsCamera)
+set_target_properties(QFpsCamera PROPERTIES FOLDER "Advance/Component")
 
-target_link_libraries(Ex01-SkyBox_CubeMaps PRIVATE QFPSCamera)
-target_link_libraries(Ex03-GPUParticles PRIVATE QFPSCamera)
+target_link_libraries(Ex01-SkyBox_CubeMaps PRIVATE QFpsCamera)
+target_link_libraries(Ex03-GPUParticles PRIVATE QFpsCamera)
 target_link_libraries(Ex04-QImGUI PRIVATE imgui implot)
-target_link_libraries(Ex05-Assimp PRIVATE assimp QFPSCamera)
+target_link_libraries(Ex05-AssimpLoadStaticMesh PRIVATE assimp QFpsCamera)
+target_link_libraries(Ex06-AssimpLoadSkeletonMesh PRIVATE assimp QFpsCamera)
 
-add_custom_command(TARGET Ex05-Assimp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:assimp> $<TARGET_FILE_DIR:Ex05-Assimp>
+add_custom_command(TARGET Ex05-AssimpLoadStaticMesh POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:assimp> $<TARGET_FILE_DIR:Ex05-AssimpLoadStaticMesh>
+    COMMAND_EXPAND_LISTS
+)
+add_custom_command(TARGET Ex06-AssimpLoadSkeletonMesh POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:assimp> $<TARGET_FILE_DIR:Ex06-AssimpLoadSkeletonMesh>
     COMMAND_EXPAND_LISTS
 )

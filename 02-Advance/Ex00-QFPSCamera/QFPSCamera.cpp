@@ -1,17 +1,17 @@
-#include "QFPSCamera.h"
+#include "QFpsCamera.h"
 #include <QMouseEvent>
 #include <QDateTime>
 #include <QCursor>
 #include <QVulkanWindow>
 
-QFPSCamera::~QFPSCamera()
+QFpsCamera::~QFpsCamera()
 {
 	if (window_) {
 		window_->removeEventFilter(this);
 	}
 }
 
-void QFPSCamera::setup(QVulkanWindow* window)
+void QFpsCamera::setup(QVulkanWindow* window)
 {
 	if (window) {
 		window_ = window;
@@ -19,12 +19,12 @@ void QFPSCamera::setup(QVulkanWindow* window)
 	}
 }
 
-QMatrix4x4 QFPSCamera::getMatrix() const
+QMatrix4x4 QFpsCamera::getMatrix() const
 {
 	return projection_ * view_;
 }
 
-bool QFPSCamera::eventFilter(QObject* watched, QEvent* event) {
+bool QFpsCamera::eventFilter(QObject* watched, QEvent* event) {
 	if (watched != nullptr && watched == window_) {
 		switch (event->type())
 		{

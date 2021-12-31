@@ -3,7 +3,7 @@
 
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
-#include "QFPSCamera.h"
+#include "QFpsCamera.h"
 
 class TriangleRenderer : public QVulkanWindowRenderer {
 public:
@@ -22,7 +22,7 @@ private:
 	vk::PipelineCache piplineCache_;
 	vk::PipelineLayout piplineLayout_;
 	vk::Pipeline pipline_;
-	QFPSCamera camera;
+	QFpsCamera camera;
 };
 
 #endif // TriangleRenderer_h__
