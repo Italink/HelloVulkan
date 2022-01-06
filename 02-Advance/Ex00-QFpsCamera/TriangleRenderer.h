@@ -4,25 +4,29 @@
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
 #include "QFpsCamera.h"
+#include "QVkWindow.h"
 
-class TriangleRenderer : public QVulkanWindowRenderer {
+class QVkCameraWindow :public QVkWindow {
 public:
-	TriangleRenderer(QVulkanWindow* window);
+	QVkCameraWindow() {
+		camera_.setup(this);
+	}
+	QFpsCamera camera_;
+};
+
+class TriangleRenderer : public QVkRenderer {
+public:
 	void initResources() override;
 	void initSwapChainResources() override;
 	void releaseSwapChainResources() override;
 	void releaseResources() override;
 	void startNextFrame() override;
 private:
-	QVulkanWindow* window_ = nullptr;
-
 	vk::Buffer vertexBuffer_;
 	vk::DeviceMemory vertexDevMemory_;
-
 	vk::PipelineCache piplineCache_;
 	vk::PipelineLayout piplineLayout_;
 	vk::Pipeline pipline_;
-	QFpsCamera camera;
 };
 
 #endif // TriangleRenderer_h__

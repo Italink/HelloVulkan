@@ -2,16 +2,12 @@
 #include <QLoggingCategory>
 #include <QVulkanInstance>
 #include <vulkan/vulkan.hpp>
+
 #include "TriangleRenderer.h"
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
-
-class VulkanWindow : public QVulkanWindow {
-public:
-	QVulkanWindowRenderer* createRenderer() override { return new TriangleRenderer(this); }
-};
 
 int main(int argc, char* argv[]) {
 	QGuiApplication app(argc, argv);
@@ -27,9 +23,11 @@ int main(int argc, char* argv[]) {
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance.vkInstance());
 
 	QLoggingCategory::setFilterRules(QStringLiteral("qt.vulkan=true"));
-	VulkanWindow vkWindow;
+
+	QVkCameraWindow vkWindow;
 	vkWindow.setVulkanInstance(&instance);
 	vkWindow.resize(1024, 768);
+	vkWindow.addRenderer(std::make_shared<TriangleRenderer>());
 	vkWindow.show();
 	return app.exec();
 }

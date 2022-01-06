@@ -1,5 +1,5 @@
 #include "TriangleRenderer.h"
-
+#include <QVkWindow.h>
 #include "triangle_vert.inl"
 #include "triangle_frag.inl"
 
@@ -8,16 +8,6 @@ static float vertexData[] = { // Y up, front = CCW
 	-0.5f,    0.5f,   0.0f, 1.0f, 0.0f,
 	 0.5f,    0.5f,   0.0f, 0.0f, 1.0f
 };
-
-TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
-	:window_(window)
-{
-	QList<int> sampleCounts = window->supportedSampleCounts();
-	if (!sampleCounts.isEmpty()) {
-		window->setSampleCount(sampleCounts.back());
-	}
-	camera.setup(window);
-}
 
 void TriangleRenderer::initResources() {
 	vk::Device device = window_->device();
@@ -156,7 +146,7 @@ void TriangleRenderer::startNextFrame() {
 	const QSize size = window_->swapChainImageSize();
 
 	vk::ClearValue clearValues[3] = {
-		vk::ClearColorValue(std::array<float,4>{1.0f,0.0f,0.0f,1.0f }),
+		vk::ClearColorValue(std::array<float,4>{ 0.0f,0.5f,0.9f,1.0f }),
 		vk::ClearDepthStencilValue(1.0f,0),
 		vk::ClearColorValue(std::array<float,4>{ 0.0f,0.5f,0.9f,1.0f }),
 	};
@@ -189,7 +179,9 @@ void TriangleRenderer::startNextFrame() {
 
 	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
 
-	QMatrix4x4 mvp = camera.getMatrix();
+	QVkCameraWindow* vkScene = dynamic_cast<QVkCameraWindow*>(window_);
+
+	QMatrix4x4 mvp = vkScene->camera_.getMatrix();
 	cmdBuffer.pushConstants(piplineLayout_, vk::ShaderStageFlagBits::eVertex, 0, sizeof(float) * 16, mvp.constData());
 
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
@@ -197,7 +189,4 @@ void TriangleRenderer::startNextFrame() {
 	cmdBuffer.draw(3, 1, 0, 0);
 
 	cmdBuffer.endRenderPass();
-
-	window_->frameReady();
-	window_->requestUpdate();
 }

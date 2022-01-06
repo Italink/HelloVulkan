@@ -26,13 +26,13 @@ layout(std140, binding = 1) buffer OutputParticle{
 
 void main() {
 
-    const uint srcIndex = gl_GlobalInvocationID.x * gl_NumWorkGroups.y * LOCAL_SIZE + gl_GlobalInvocationID.y;
+    const uint srcIndex = gl_GlobalInvocationID.x * gl_NumWorkGroups.y * LOCAL_SIZE + gl_GlobalInvocationID.y;      //根据工作单元的位置换算出内存上的索引
 
     if( srcIndex >= inputCounter||intputParticles[srcIndex].life > DEAD_TIME) // 
         return;
-    const uint dstIndex = atomicAdd(outputCounter,1);
+    const uint dstIndex = atomicAdd(outputCounter,1);                           //顶点计数
 
-    outputParticles[dstIndex].life = intputParticles[srcIndex].life + 0.01;
+    outputParticles[dstIndex].life = intputParticles[srcIndex].life + 0.01;     //填充到新的顶点索引
 
     outputParticles[dstIndex].position = intputParticles[srcIndex].position + intputParticles[srcIndex].velocity ;
 
