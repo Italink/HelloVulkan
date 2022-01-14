@@ -21,17 +21,21 @@ function(target_glsl_to_spriv PROJECT_TARGET SHADER_PATH OUTPUT_DIR)
         COMMAND glslangValidator.exe ${SHADER_PATH} -V -o ${BINARY_SHADER_HEADER_PATH} --vn ${NEW_SHADER_NAME} --spirv-val
         MAIN_DEPENDENCY ${SHADER_PATH}
     )       
-    #set_property(SOURCE ${SHADER_PATH} APPEND PROPERTY OBJECT_DEPENDS ${BINARY_SHADER_HEADER_PATH})
     set_property(TARGET ${PROJECT_TARGET} APPEND PROPERTY SOURCES ${BINARY_SHADER_HEADER_PATH})  
     source_group("Shader Files/Generated Header" FILES ${BINARY_SHADER_HEADER_PATH})
 endfunction()
 
+
 function(add_example SUB_DIR)
     get_filename_component(ProjectId ${SUB_DIR} NAME)
+    set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${SUB_DIR})
+    set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${ProjectId})
+    set(PROJECT_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/${ProjectId}/Shaders)
+    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR})
+    file(MAKE_DIRECTORY ${PROJECT_SHADER_DIR})
 
-    file(GLOB PROJECT_SOURCE FILES ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.h  ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.cpp ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.qrc)
-
-    file(GLOB SHADER_SOURCE FILES   ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.vert  ${SUB_DIR}/*.frag   ${CMAKE_CURRENT_LIST_DIR}/${SUB_DIR}/*.comp)
+    file(GLOB PROJECT_SOURCE FILES ${PROJECT_SOURCE_DIR}/*.h  ${PROJECT_SOURCE_DIR}/*.cpp ${PROJECT_SOURCE_DIR}/*.qrc)
+    file(GLOB SHADER_SOURCE FILES  ${PROJECT_SOURCE_DIR}/*.vert  ${SUB_DIR}/*.frag   ${PROJECT_SOURCE_DIR}/*.comp)
 
     source_group("Shader Files/GLSL" FILES ${SHADER_SOURCE})
     source_group("Source Files" FILES ${PROJECT_SOURCE})
@@ -40,11 +44,6 @@ function(add_example SUB_DIR)
         ${PROJECT_SOURCE}
         ${SHADER_SOURCE}
     )
-
-    set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${ProjectId})
-    set(PROJECT_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/${ProjectId}/Shaders)
-    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR})
-    file(MAKE_DIRECTORY ${PROJECT_SHADER_DIR})
 
     target_include_directories(${ProjectId} PUBLIC ${PROJECT_SHADER_DIR})
 
@@ -55,6 +54,7 @@ function(add_example SUB_DIR)
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
         VS_DEBUGGER_WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
+    target_compile_definitions(${ProjectId} PRIVATE PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
 
     foreach(SHADER ${SHADER_SOURCE})
         target_glsl_to_spriv(${ProjectId} ${SHADER} ${PROJECT_SHADER_DIR})

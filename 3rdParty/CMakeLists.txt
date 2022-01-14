@@ -28,6 +28,8 @@ target_include_directories(implot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 target_include_directories(implot PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/implot)
 target_link_libraries(implot PRIVATE imgui)
 
+add_subdirectory(assimp)
+add_subdirectory(glslang)
 
 function(get_all_targets var)
     set(targets)
@@ -43,8 +45,6 @@ macro(get_all_targets_recursive targets dir)
     get_property(current_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
     list(APPEND ${targets} ${current_targets})
 endmacro()
-
-add_subdirectory(assimp)
 
 get_all_targets(TARGET_LIST)
 

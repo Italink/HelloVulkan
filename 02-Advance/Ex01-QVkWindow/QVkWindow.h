@@ -13,6 +13,20 @@ protected:
 	QVkWindow* window_ = nullptr;
 };
 
+class QVkPrimitive : public QVkRenderer {
+public:
+private:
+	unsigned int id;
+	QVector3D position_;
+	QVector3D rotation_;
+	QVector3D scale_;
+};
+
+class QVkEffect : public QVkRenderer {
+private:
+	QRect geomtry_;
+};
+
 class QVkScene : public QVulkanWindowRenderer {
 public:
 	QVkScene(QVkWindow* window) :window_(window) {}
