@@ -1,4 +1,4 @@
-#include "TrianglePipline.h"
+#include "TriangleRenderer.h"
 #include "triangle_vert.inl"
 #include "triangle_frag.inl"
 
@@ -8,11 +8,7 @@ static float vertexData[] = { // Y up, front = CCW
 	 0.5f,    0.5f,   0.0f, 0.0f, 1.0f
 };
 
-TrianglePipline::TrianglePipline(QVulkanWindow* window)
-	:window_(window)
-{}
-
-void TrianglePipline::init()
+void TriangleRenderer::initResources()
 {
 	vk::Device device = window_->device();
 	const int concurrentFrameCount = window_->concurrentFrameCount();
@@ -111,14 +107,24 @@ void TrianglePipline::init()
 	device.destroyShaderModule(fragShader);
 }
 
-void TrianglePipline::render()
+void TriangleRenderer::releaseResources()
+{
+	vk::Device device = window_->device();
+	device.destroyPipeline(pipline_);
+	device.destroyPipelineCache(piplineCache_);
+	device.destroyPipelineLayout(piplineLayout_);
+	device.destroyBuffer(vertexBuffer_);
+	device.freeMemory(vertexDevMemory_);
+}
+
+void TriangleRenderer::startNextFrame()
 {
 	vk::Device device = window_->device();
 
 	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
 
 	vk::ClearValue clearValues[3] = {
-	vk::ClearColorValue(std::array<float,4>{1.0f,0.0f,0.0f,1.0f }),
+	vk::ClearColorValue(std::array<float,4>{0.0f,0.0f,0.0f,1.0f }),
 	vk::ClearDepthStencilValue(1.0f,0),
 	vk::ClearColorValue(std::array<float,4>{ 0.0f,0.0f,0.0f,0.0f }),
 	};
@@ -154,14 +160,4 @@ void TrianglePipline::render()
 	cmdBuffer.bindVertexBuffers(0, vertexBuffer_, { 0 });
 	cmdBuffer.draw(3, 1, 0, 0);
 	cmdBuffer.endRenderPass();
-}
-
-void TrianglePipline::destroy()
-{
-	vk::Device device = window_->device();
-	device.destroyPipeline(pipline_);
-	device.destroyPipelineCache(piplineCache_);
-	device.destroyPipelineLayout(piplineLayout_);
-	device.destroyBuffer(vertexBuffer_);
-	device.freeMemory(vertexDevMemory_);
 }

@@ -1,34 +1,28 @@
 #ifndef BloomRenderer_h__
 #define BloomRenderer_h__
 
-#include <vulkan\vulkan.hpp>
+#include "QVkWindow.h"
+#include "TextureRenderer.h"
 
-class BloomRenderer {
+class BloomRenderer :public QVkRenderer {
 public:
 	BloomRenderer();
 	void setBlurSize(int size);
 	void setBlurStrength(float strength);
 	void setBlurScale(float scale);
 
-	vk::ImageView getOutputImageView();
-
-	void init(vk::Device device);
-	void render(vk::Image image, int width, int height, vk::CommandBuffer cmdBuffer);
-	void destroy();
-	void updateFrameBuffer(int width, int height, uint32_t memoryIndex);
+	void initResources() override;
+	void initSwapChainResources() override;
+	void releaseSwapChainResources() override;
+	void releaseResources() override;
+	void startNextFrame() override;
 private:
-	void destroyFrameBuffer();
-	bool isInitialized();
-private:
-	vk::Device device;
-
 	struct FrameBuffer {
 		vk::Framebuffer framebuffer;
 		vk::Image image;
 		vk::DeviceMemory imageMemory;
 		vk::ImageView imageView;
 	}frameBuffer_[2];
-	bool frameBufferFormathasInit = false;
 
 	vk::Sampler sampler_;
 	vk::RenderPass renderPass_;
@@ -48,6 +42,8 @@ private:
 		int size = 5;
 		float weight[40] = { 0.227027f,0.1945946f,0.1216216f,0.054054f , 0.016216f };
 	}blurParams_;
+
+	TextureRenderer textureRenderer;
 };
 
 #endif // BloomRenderer_h__

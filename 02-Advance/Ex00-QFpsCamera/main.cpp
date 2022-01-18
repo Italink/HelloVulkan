@@ -27,7 +27,6 @@ int main(int argc, char* argv[]) {
 	QVkCameraWindow vkWindow;
 	vkWindow.setVulkanInstance(&instance);
 	vkWindow.resize(1024, 768);
-	vkWindow.addRenderer(std::make_shared<TriangleRenderer>());
 	vkWindow.show();
 	return app.exec();
 }

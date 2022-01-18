@@ -4,7 +4,7 @@
 void QVkScene::addRenderer(std::shared_ptr<QVkRenderer> renderer)
 {
 	rendererList_.push_back(renderer);
-	renderer->window_ = window_;
+	renderer->setWindow(window_);
 	if (window_->device()) {
 		renderer->initResources();
 		renderer->initSwapChainResources();
@@ -40,7 +40,7 @@ void QVkScene::initSwapChainResources()
 void QVkScene::releaseSwapChainResources()
 {
 	for (auto& renderer : rendererList_) {
-		renderer->initSwapChainResources();
+		renderer->releaseSwapChainResources();
 	}
 }
 

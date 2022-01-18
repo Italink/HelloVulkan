@@ -1,21 +1,16 @@
 #ifndef TrianglePipline_h__
 #define TrianglePipline_h__
 
-#include <QVulkanWindow>
-#include <vulkan\vulkan.hpp>
+#include "QVkWindow.h"
 
-class TrianglePipline {
+class TriangleRenderer:public QVkRenderer {
 public:
-	TrianglePipline(QVulkanWindow* window);
-	void init();
-	void render();
-	void destroy();
+	void initResources() override;
+	void releaseResources() override;
+	void startNextFrame() override;
 private:
-	QVulkanWindow* window_ = nullptr;
-
 	vk::Buffer vertexBuffer_;
 	vk::DeviceMemory vertexDevMemory_;
-
 	vk::PipelineCache piplineCache_;
 	vk::PipelineLayout piplineLayout_;
 	vk::Pipeline pipline_;

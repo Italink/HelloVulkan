@@ -5,10 +5,9 @@
 TextureRenderer::TextureRenderer()
 {}
 
-void TextureRenderer::init(vk::Device device, vk::SampleCountFlagBits sampleCount, vk::RenderPass renderPass)
+void TextureRenderer::initResources()
 {
-	this->device = device;
-
+	vk::Device device = window_->device();
 	vk::SamplerCreateInfo samplerInfo;
 	samplerInfo.magFilter = vk::Filter::eNearest;
 	samplerInfo.minFilter = vk::Filter::eNearest;
@@ -79,7 +78,7 @@ void TextureRenderer::init(vk::Device device, vk::SampleCountFlagBits sampleCoun
 	piplineInfo.pRasterizationState = &rasterizationState;
 
 	vk::PipelineMultisampleStateCreateInfo MSState;
-	MSState.rasterizationSamples = sampleCount;
+	MSState.rasterizationSamples = (vk::SampleCountFlagBits::e1);
 	piplineInfo.pMultisampleState = &MSState;
 
 	vk::PipelineDepthStencilStateCreateInfo DSState;
@@ -114,7 +113,7 @@ void TextureRenderer::init(vk::Device device, vk::SampleCountFlagBits sampleCoun
 	piplineLayout_ = device.createPipelineLayout(piplineLayoutInfo);
 	piplineInfo.layout = piplineLayout_;
 
-	piplineInfo.renderPass = renderPass;
+	piplineInfo.renderPass = window_->defaultRenderPass();
 
 	piplineCache_ = device.createPipelineCache(vk::PipelineCacheCreateInfo());
 
@@ -124,15 +123,9 @@ void TextureRenderer::init(vk::Device device, vk::SampleCountFlagBits sampleCoun
 	device.destroyShaderModule(fragShader);
 }
 
-void TextureRenderer::render(vk::CommandBuffer cmdBuffer)
+void TextureRenderer::releaseResources()
 {
-	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
-	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_, 0, nullptr);
-	cmdBuffer.draw(4, 1, 0, 0);
-}
-
-void TextureRenderer::destroy()
-{
+	vk::Device device = window_->device();
 	device.destroySampler(sampler_);
 	device.destroyDescriptorPool(descPool_);
 	device.destroyDescriptorSetLayout(descSetLayout_);
@@ -141,8 +134,49 @@ void TextureRenderer::destroy()
 	device.destroyPipelineLayout(piplineLayout_);
 }
 
+void TextureRenderer::startNextFrame()
+{
+	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
+	vk::ClearValue clearValues[3] = {
+		vk::ClearColorValue(std::array<float,4>{0.0f,0.0f,0.0f,1.0f }),
+		vk::ClearDepthStencilValue(1.0f,0),
+		vk::ClearColorValue(std::array<float,4>{ 0.0f,0.0f,0.0f,1.0f }),
+	};
+
+	vk::RenderPassBeginInfo beginInfo;
+	beginInfo.renderPass = window_->defaultRenderPass();
+	beginInfo.framebuffer = window_->currentFramebuffer();
+	beginInfo.renderArea.extent.width = window_->swapChainImageSize().width();
+	beginInfo.renderArea.extent.height = window_->swapChainImageSize().height();
+	beginInfo.clearValueCount = window_->sampleCountFlagBits() > VK_SAMPLE_COUNT_1_BIT ? 3 : 2;
+	beginInfo.pClearValues = clearValues;
+
+	cmdBuffer.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
+
+	vk::Viewport viewport;
+	viewport.x = viewport.y = 0;
+	viewport.width = window_->swapChainImageSize().width();
+	viewport.height = window_->swapChainImageSize().height();
+	viewport.minDepth = 0;
+	viewport.maxDepth = 1;
+	cmdBuffer.setViewport(0, viewport);
+
+	vk::Rect2D scissor;
+	scissor.offset.x = scissor.offset.y = 0;
+	scissor.extent.width = viewport.width;
+	scissor.extent.height = viewport.height;
+	cmdBuffer.setScissor(0, scissor);
+
+	cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipline_);
+	cmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, piplineLayout_, 0, 1, &descSet_, 0, nullptr);
+	cmdBuffer.draw(4, 1, 0, 0);
+
+	cmdBuffer.endRenderPass();
+}
+
 void TextureRenderer::updateImage(vk::ImageView image)
 {
+	vk::Device device = window_->device();
 	vk::DescriptorImageInfo descImageInfo(sampler_, image, vk::ImageLayout::eShaderReadOnlyOptimal);
 	vk::WriteDescriptorSet descWrite;
 	descWrite.dstSet = descSet_;
@@ -151,8 +185,4 @@ void TextureRenderer::updateImage(vk::ImageView image)
 	descWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
 	descWrite.pImageInfo = &descImageInfo;
 	device.updateDescriptorSets(1, &descWrite, 0, nullptr);
-}
-
-void TextureRenderer::updateRect(int x, int y, int width, int height)
-{
 }

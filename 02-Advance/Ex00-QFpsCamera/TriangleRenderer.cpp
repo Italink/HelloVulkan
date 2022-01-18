@@ -1,5 +1,4 @@
 #include "TriangleRenderer.h"
-#include <QVkWindow.h>
 #include "triangle_vert.inl"
 #include "triangle_frag.inl"
 
@@ -8,6 +7,11 @@ static float vertexData[] = { // Y up, front = CCW
 	-0.5f,    0.5f,   0.0f, 1.0f, 0.0f,
 	 0.5f,    0.5f,   0.0f, 0.0f, 1.0f
 };
+
+TriangleRenderer::TriangleRenderer(QVkCameraWindow* window)
+	:window_(window)
+{
+}
 
 void TriangleRenderer::initResources() {
 	vk::Device device = window_->device();
@@ -189,4 +193,7 @@ void TriangleRenderer::startNextFrame() {
 	cmdBuffer.draw(3, 1, 0, 0);
 
 	cmdBuffer.endRenderPass();
+
+	window_->frameReady();
+	window_->requestUpdate();
 }

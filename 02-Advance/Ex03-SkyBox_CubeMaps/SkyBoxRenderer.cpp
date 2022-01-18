@@ -48,16 +48,6 @@ static float vertexData[] = { // Y up, front = CCW
 		 1.0f, -1.0f,  1.0f
 };
 
-SkyBoxRenderer::SkyBoxRenderer(QVulkanWindow* window)
-	:window_(window)
-{
-	QList<int> sampleCounts = window->supportedSampleCounts();
-	if (!sampleCounts.isEmpty()) {
-		window->setSampleCount(sampleCounts.back());
-	}
-	fpsCamera_.setup(window_);
-}
-
 void SkyBoxRenderer::initResources()
 {
 	vk::Device device = window_->device();
@@ -372,7 +362,7 @@ void SkyBoxRenderer::startNextFrame() {
 	cmdBuffer.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
 
 	QMatrix4x4 matrix;
-	matrix *= fpsCamera_.getMatrix();
+	matrix *= window_->camera_.getMatrix();
 	matrix *= window_->clipCorrectionMatrix();
 	cmdBuffer.pushConstants(piplineLayout_, vk::ShaderStageFlagBits::eVertex, 0, sizeof(float) * 16, matrix.constData());
 
@@ -401,7 +391,4 @@ void SkyBoxRenderer::startNextFrame() {
 	cmdBuffer.draw(36, 1, 0, 0);
 
 	cmdBuffer.endRenderPass();
-
-	window_->frameReady();
-	window_->requestUpdate();
 }

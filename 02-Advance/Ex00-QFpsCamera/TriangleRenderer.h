@@ -4,18 +4,12 @@
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
 #include "QFpsCamera.h"
-#include "QVkWindow.h"
 
-class QVkCameraWindow :public QVkWindow {
-public:
-	QVkCameraWindow() {
-		camera_.setup(this);
-	}
-	QFpsCamera camera_;
-};
+class QVkCameraWindow;
 
-class TriangleRenderer : public QVkRenderer {
+class TriangleRenderer : public QVulkanWindowRenderer {
 public:
+	TriangleRenderer(QVkCameraWindow* window);
 	void initResources() override;
 	void initSwapChainResources() override;
 	void releaseSwapChainResources() override;
@@ -27,6 +21,19 @@ private:
 	vk::PipelineCache piplineCache_;
 	vk::PipelineLayout piplineLayout_;
 	vk::Pipeline pipline_;
+	QVkCameraWindow* window_;
+};
+
+class QVkCameraWindow :public QVulkanWindow {
+public:
+	QVkCameraWindow() {
+		camera_.setup(this);
+	}
+	QFpsCamera camera_;
+protected:
+	QVulkanWindowRenderer* createRenderer() override {
+		return new TriangleRenderer(this);
+	}
 };
 
 #endif // TriangleRenderer_h__

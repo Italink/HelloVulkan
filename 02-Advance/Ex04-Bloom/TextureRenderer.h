@@ -1,16 +1,17 @@
 #ifndef TextureRenderer_h__
 #define TextureRenderer_h__
 
-#include <vulkan\vulkan.hpp>
+#include "QVkWindow.h"
 
-class TextureRenderer {
+class TextureRenderer :public QVkRenderer {
 public:
 	TextureRenderer();
-	void init(vk::Device device, vk::SampleCountFlagBits sampleCount, vk::RenderPass renderPass);
-	void render(vk::CommandBuffer cmdBuffer);
-	void destroy();
+
+	void initResources() override;
+	void releaseResources() override;
+	void startNextFrame() override;
 	void updateImage(vk::ImageView image);
-	void updateRect(int x, int y, int width, int height);
+
 protected:
 	vk::Sampler sampler_;
 
@@ -21,8 +22,6 @@ protected:
 	vk::PipelineCache piplineCache_;
 	vk::PipelineLayout piplineLayout_;
 	vk::Pipeline pipline_;
-private:
-	vk::Device device;
 };
 
 #endif // TextureRenderer_h__

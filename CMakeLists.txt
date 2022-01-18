@@ -30,7 +30,9 @@ function(add_example SUB_DIR)
     get_filename_component(ProjectId ${SUB_DIR} NAME)
     set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${SUB_DIR})
     set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${ProjectId})
-    set(PROJECT_SHADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/${ProjectId}/Shaders)
+
+    set(PROJECT_SHADER_DIR ${PROJECT_SOURCE_DIR})
+
     file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR})
     file(MAKE_DIRECTORY ${PROJECT_SHADER_DIR})
 
@@ -44,8 +46,6 @@ function(add_example SUB_DIR)
         ${PROJECT_SOURCE}
         ${SHADER_SOURCE}
     )
-
-    target_include_directories(${ProjectId} PUBLIC ${PROJECT_SHADER_DIR})
 
     set_target_properties(${ProjectId} 
         PROPERTIES

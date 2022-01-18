@@ -11,10 +11,6 @@ static float vertexData[] = { // Y up, front = CCW
 TriangleRenderer::TriangleRenderer(QVulkanWindow* window)
 	:window_(window)
 {
-	QList<int> sampleCounts = window->supportedSampleCounts();
-	if (!sampleCounts.isEmpty()) {
-		window->setSampleCount(sampleCounts.back());
-	}
 }
 
 void TriangleRenderer::initResources()
