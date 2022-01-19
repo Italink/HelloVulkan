@@ -9,7 +9,6 @@ foreach(ADVANCE_EXAMPLE_NAME ${ADVANCE_EXAMPLE_LIST})
     endif()
 endforeach()
 
-
 add_library(QFpsCamera
     STATIC
     Ex00-QFpsCamera/QFpsCamera.cpp
@@ -28,7 +27,7 @@ target_link_libraries(QVkWindow PUBLIC Qt${QT_VERSION_MAJOR}::Widgets QFpsCamera
 target_include_directories(QVkWindow PUBLIC ${CMAKE_CURRENT_LIST_DIR}/Ex01-QVkWindow)
 set_target_properties(QVkWindow PROPERTIES FOLDER "02-Advance/Component")
 
-target_link_libraries(Ex01-QVkWindow PRIVATE QFpsCamera  Qt${QT_VERSION_MAJOR}::WidgetsPrivate)
+target_link_libraries(Ex01-QVkWindow PRIVATE QFpsCamera )
 target_link_libraries(Ex03-SkyBox_CubeMaps PRIVATE QVkWindow)
 target_link_libraries(Ex04-Bloom PRIVATE QVkWindow)
 target_link_libraries(Ex05-GPUParticles PRIVATE QFpsCamera)

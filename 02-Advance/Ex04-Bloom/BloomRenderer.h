@@ -1,8 +1,8 @@
 #ifndef BloomRenderer_h__
 #define BloomRenderer_h__
 
-#include "QVkWindow.h"
 #include "TextureRenderer.h"
+#include "QVKWindow.h"
 
 class BloomRenderer :public QVkRenderer {
 public:

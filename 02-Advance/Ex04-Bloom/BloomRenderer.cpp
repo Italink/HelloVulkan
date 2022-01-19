@@ -206,7 +206,7 @@ void BloomRenderer::initResources()
 	device.destroyShaderModule(vertShader);
 	device.destroyShaderModule(fragShader);
 
-	textureRenderer.setWindow(this->window_);
+	textureRenderer.setWindow(window_);
 	textureRenderer.initResources();
 }
 
@@ -257,7 +257,6 @@ void BloomRenderer::initSwapChainResources() {
 
 	framebufferInfo.pAttachments = &frameBuffer_[1].imageView;
 	frameBuffer_[1].framebuffer = device.createFramebuffer(framebufferInfo);
-	textureRenderer.updateImage(frameBuffer_[0].imageView);
 
 	vk::ImageMemoryBarrier barrier;
 	barrier.srcAccessMask = vk::AccessFlagBits::eHostWrite;
@@ -300,6 +299,7 @@ void BloomRenderer::initSwapChainResources() {
 		descWrite.pImageInfo = &descImageInfo;
 		device.updateDescriptorSets(1, &descWrite, 0, nullptr);
 	}
+	textureRenderer.updateImage(frameBuffer_[0].imageView);
 }
 
 void BloomRenderer::releaseSwapChainResources()
@@ -332,7 +332,6 @@ void BloomRenderer::startNextFrame()
 	vk::Device device = window_->device();
 	vk::CommandBuffer cmdBuffer = window_->currentCommandBuffer();
 	vk::Image currentImage = window_->swapChainImage(window_->currentSwapChainImageIndex());
-
 	vk::ImageMemoryBarrier barrier;
 	barrier.srcAccessMask = vk::AccessFlagBits::eNoneKHR;
 	barrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;

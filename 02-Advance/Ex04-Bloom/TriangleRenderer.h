@@ -3,7 +3,7 @@
 
 #include "QVkWindow.h"
 
-class TriangleRenderer:public QVkRenderer {
+class TriangleRenderer :public QVkRenderer {
 public:
 	void initResources() override;
 	void releaseResources() override;
