@@ -5,8 +5,8 @@
 #include <QMouseEvent>
 #include <QDateTime>
 
-#include "imgui_vert.inl"
-#include "imgui_frag.inl"
+#include "Shaders/imgui_vert.inl"
+#include "Shaders/imgui_frag.inl"
 
 const int64_t IMGUI_BUFFER_SIZE = 500000;
 

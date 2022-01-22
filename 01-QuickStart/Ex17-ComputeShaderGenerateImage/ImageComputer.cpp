@@ -1,7 +1,7 @@
 #include "ImageComputer.h"
 #include <QDesktopServices>
 #include <QUrl>
-#include "image_comp.inl"
+#include "Shaders/image_comp.inl"
 
 ImageComputer::ImageComputer(QVulkanWindow* window)
 	:window_(window)

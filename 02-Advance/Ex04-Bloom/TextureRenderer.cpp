@@ -1,6 +1,6 @@
 #include "TextureRenderer.h"
-#include "full_screen_vert.inl"
-#include "display_frag.inl"
+#include "Shaders/full_screen_vert.inl"
+#include "Shaders/display_frag.inl"
 
 TextureRenderer::TextureRenderer()
 {}

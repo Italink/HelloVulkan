@@ -2,9 +2,9 @@
 #include "ParitclesRenderer.h"
 #include "QDateTime"
 
-#include "particle_renderer_vert.inl"
-#include "particle_renderer_frag.inl"
-#include "particle_runner_comp.inl"
+#include "Shaders/particle_renderer_vert.inl"
+#include "Shaders/particle_renderer_frag.inl"
+#include "Shaders/particle_runner_comp.inl"
 
 #define LOCAL_SIZE 32
 

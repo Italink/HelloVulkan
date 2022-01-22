@@ -2,7 +2,7 @@
 
 StaticMeshRenderer::StaticMeshRenderer(QVulkanWindow* window)
 	: window_(window)
-	, staticMesh_(window, "F:/QtVulkan/02-Advance/Ex05-Assimp/Genji/Genji.FBX")
+	, staticMesh_(window, PROJECT_SOURCE_DIR "/Genji/Genji.FBX")
 {
 	camera_.setup(window);
 }

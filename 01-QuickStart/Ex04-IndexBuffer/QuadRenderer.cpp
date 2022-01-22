@@ -1,6 +1,6 @@
 #include "QuadRenderer.h"
-#include "quad_vert.inl"
-#include "quad_frag.inl"
+#include "Shaders/quad_vert.inl"
+#include "Shaders/quad_frag.inl"
 
 static float vertexData[] = { // Y up, front = CCW
 	-0.5f, -0.5f,		 1.0f, 0.0f, 0.0f,

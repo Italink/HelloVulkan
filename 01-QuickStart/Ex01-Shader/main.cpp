@@ -4,8 +4,8 @@
 #include <iostream>
 #include <filesystem>
 
-#include "shader_vert.inl"
-#include "shader_frag.inl"
+#include "Shaders/shader_vert.inl"
+#include "Shaders/shader_frag.inl"
 
 #include <SPIRV/GlslangToSpv.h>
 #include <glslang/Public/ShaderLang.h>

@@ -1,7 +1,7 @@
 #include "SkyBoxRenderer.h"
 #include <QTime>
-#include "skybox_vert.inl"
-#include "skybox_frag.inl"
+#include "Shaders/skybox_vert.inl"
+#include "Shaders/skybox_frag.inl"
 
 static float vertexData[] = { // Y up, front = CCW
 		// positions

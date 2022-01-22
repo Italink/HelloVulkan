@@ -2,8 +2,8 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <filesystem>
-#include "mesh_vert.inl"
-#include "mesh_frag.inl"
+#include "Shaders/mesh_vert.inl"
+#include "Shaders/mesh_frag.inl"
 #include "QImage"
 
 SkeletonMesh::SkeletonMesh(QVulkanWindow* window, std::string file_path)

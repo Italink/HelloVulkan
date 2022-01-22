@@ -1,7 +1,7 @@
 #include "TriangleRenderer.h"
 #include <QTime>
-#include "triangle_vert.inl"
-#include "triangle_frag.inl"
+#include "Shaders/triangle_vert.inl"
+#include "Shaders/triangle_frag.inl"
 
 static float vertexData[] = { // Y up, front = CCW
 	 0.0f,  -0.5f,   1.0f, 0.0f, 0.0f,

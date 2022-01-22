@@ -1,5 +1,5 @@
 #include "BufferComputer.h"
-#include "buffer_comp.inl"
+#include "Shaders/buffer_comp.inl"
 
 const float data[16] = { 0 };
 

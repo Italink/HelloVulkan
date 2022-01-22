@@ -1,6 +1,6 @@
 #include "BloomRenderer.h"
-#include "full_screen_vert.inl"
-#include "gaussblur_frag.inl"
+#include "Shaders/full_screen_vert.inl"
+#include "Shaders/gaussblur_frag.inl"
 
 BloomRenderer::BloomRenderer()
 {

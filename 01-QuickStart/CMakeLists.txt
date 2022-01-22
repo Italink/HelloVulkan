@@ -9,6 +9,7 @@ endforeach()
 
 
 target_link_libraries(Ex01-Shader PUBLIC glslang SPIRV glslang-default-resource-limits)
+
 add_custom_command(TARGET Ex01-Shader PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:glslang> $<TARGET_FILE_DIR:Ex01-Shader>
     COMMAND_EXPAND_LISTS

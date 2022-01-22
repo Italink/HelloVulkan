@@ -1,7 +1,7 @@
 #include "TextureRenderer.h"
 #include <QTime>
-#include "texture_vert.inl"
-#include "texture_frag.inl"
+#include "Shaders/texture_vert.inl"
+#include "Shaders/texture_frag.inl"
 
 static float vertexData[] = { // Y up, front = CCW
 	//position		tex_coord

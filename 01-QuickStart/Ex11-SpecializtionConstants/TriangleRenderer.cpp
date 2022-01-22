@@ -1,7 +1,7 @@
 #include "TriangleRenderer.h"
 #include <QTime>
-#include "triangle_vert.inl"
-#include "triangle_frag.inl"
+#include "Shaders/triangle_vert.inl"
+#include "Shaders/triangle_frag.inl"
 
 const int switcher = 1;
 

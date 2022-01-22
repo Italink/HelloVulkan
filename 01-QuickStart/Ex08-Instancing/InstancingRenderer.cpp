@@ -1,6 +1,6 @@
 #include "InstancingRenderer.h"
-#include "triangles_vert.inl"
-#include "triangles_frag.inl"
+#include "Shaders/triangles_vert.inl"
+#include "Shaders/triangles_frag.inl"
 
 static float vertexData[] = { // Y up, front = CCW
 	 0.0f,  -0.1f,   1.0f, 0.0f, 0.0f,
