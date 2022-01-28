@@ -215,7 +215,7 @@ void QuadRenderer::startNextFrame() {
 	const QSize size = window_->swapChainImageSize();
 
 	vk::ClearValue clearValues[3] = {
-		vk::ClearColorValue(std::array<float,4>{1.0f,0.0f,0.0f,1.0f }),
+		vk::ClearColorValue(std::array<float,4>{0.0f,0.0f,0.0f,1.0f }),
 		vk::ClearDepthStencilValue(1.0f,0),
 		vk::ClearColorValue(std::array<float,4>{ 0.0f,0.5f,0.9f,1.0f }),
 	};

@@ -6,7 +6,6 @@
 class TextureRenderer :public QVkRenderer {
 public:
 	TextureRenderer();
-
 	void initResources() override;
 	void releaseResources() override;
 	void startNextFrame() override;

@@ -194,7 +194,6 @@ QImage OffscreenRenderer::createImage(QSize size, QColor color)
 	stagingSubRes.aspectMask = vk::ImageAspectFlagBits::eColor;
 	stagingSubRes.arrayLayer = 0;
 	stagingSubRes.mipLevel = 0;
-
 	VkSubresourceLayout layout = device.getImageSubresourceLayout(stagingImage, stagingSubRes);
 	uint8_t* memPtr = (uint8_t*)device.mapMemory(stagingImageMemory, layout.offset, layout.size, {});
 

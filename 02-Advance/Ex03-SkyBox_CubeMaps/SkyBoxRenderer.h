@@ -3,7 +3,6 @@
 
 #include <QVulkanWindowRenderer>
 #include <vulkan\vulkan.hpp>
-#include "QFpsCamera.h"
 #include "QVkWindow.h"
 
 class SkyBoxRenderer : public QVkRenderer {

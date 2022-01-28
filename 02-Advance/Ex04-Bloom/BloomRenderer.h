@@ -35,7 +35,6 @@ private:
 	vk::Pipeline vBlurPipline_;
 
 	vk::PushConstantRange pushConstant_;
-
 	struct BlurParams {
 		float scale = 1.0;
 		float strength = 2.0;

@@ -27,7 +27,6 @@ void QuadRenderer::initResources()
 {
 	vk::Device device = window_->device();
 
-	const int concurrentFrameCount = window_->concurrentFrameCount();
 	vk::PhysicalDeviceLimits limits = window_->physicalDeviceProperties()->limits;
 
 	vk::BufferCreateInfo vertexBufferInfo;
